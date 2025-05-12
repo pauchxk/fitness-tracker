@@ -9,9 +9,13 @@
 <PageTitle>Kitchen</PageTitle>
 <h1>Kitchen</h1>
 
-<RadzenDataGrid @ref="FoodsDataGrid" Data="@Foods">
+<RadzenDataGrid @ref="FoodsDataGrid" Data="@Foods" ColumnWidth="125px" AllowAlternatingRows="true" 
+    Style="height: 100%; width: 75vw">
+    <HeaderTemplate>
+        <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Icon="add_circle" Text="Add Food" Click="@AddFood"/>
+    </HeaderTemplate>
     <Columns>
-        <RadzenDataGridColumn Property="@nameof(Food.FoodName)" Title="Name"/>
+        <RadzenDataGridColumn Property="@nameof(Food.FoodName)" Title="Name" Frozen="true" FrozenPosition="FrozenColumnPosition.Left"/>
         <RadzenDataGridColumn Property="@nameof(Food.FoodGroup)" Title="Group"/>
         <RadzenDataGridColumn Property="@nameof(Food.FoodSubGroup)" Title="Sub-Group"/>
         <RadzenDataGridColumn Property="@nameof(Food.Notes)" Title="Notes"/>
@@ -40,5 +44,10 @@
 
         await FoodsDataGrid.Reload();
         StateHasChanged();
+    }
+
+    public async void AddFood()
+    {
+
     }
 }
