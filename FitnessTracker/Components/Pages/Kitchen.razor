@@ -1,0 +1,44 @@
+@page "/Kitchen"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using FitnessTracker.Models
+@using Radzen
+@using Radzen.Blazor
+@inject IDbContextFactory<FitnessTracker.Models.FitnessTrackerContext> DbFactory
+
+<PageTitle>Kitchen</PageTitle>
+<h1>Kitchen</h1>
+
+<RadzenDataGrid @ref="FoodsDataGrid" Data="@Foods">
+    <Columns>
+        <RadzenDataGridColumn Property="@nameof(Food.FoodName)" Title="Name"/>
+        <RadzenDataGridColumn Property="@nameof(Food.FoodGroup)" Title="Group"/>
+        <RadzenDataGridColumn Property="@nameof(Food.FoodSubGroup)" Title="Sub-Group"/>
+        <RadzenDataGridColumn Property="@nameof(Food.Notes)" Title="Notes"/>
+        <RadzenDataGridColumn Property="@nameof(Food.Amount)" Title="Amount (g)"/>
+        <RadzenDataGridColumn Property="@nameof(Food.Calories)" Title="Calories (kcal)"/>
+        <RadzenDataGridColumn Property="@nameof(Food.Protein)" Title="Protein (g)"/>
+        <RadzenDataGridColumn Property="@nameof(Food.Fat)" Title="Fat (g)"/>
+        <RadzenDataGridColumn Property="@nameof(Food.Carbohydrates)" Title="Carbohydrates (g)"/>
+        <RadzenDataGridColumn Property="@nameof(Food.Fiber)" Title="Fiber (g)"/>
+    </Columns>
+</RadzenDataGrid>
+
+@code
+{
+    private FitnessTrackerContext context = default!;
+
+    public required List<Food> Foods { get;set; }
+    public required RadzenDataGrid<Food> FoodsDataGrid;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        context = DbFactory.CreateDbContext();
+        Foods = await context.Foods.ToListAsync();
+
+        await FoodsDataGrid.Reload();
+        StateHasChanged();
+    }
+}
