@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace FitnessTracker;
+namespace FitnessTracker.Models;
 
 public partial class DailyLog
 {

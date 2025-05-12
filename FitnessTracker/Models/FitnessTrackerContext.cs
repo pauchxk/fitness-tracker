@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
-namespace FitnessTracker;
+namespace FitnessTracker.Models;
 
 public partial class FitnessTrackerContext : DbContext
 {

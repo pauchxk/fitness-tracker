@@ -1,5 +1,7 @@
 ﻿@page "/counter"
 @rendermode InteractiveServer
+@inject FitnessTrackerContext context
+@using Microsoft.EntityFrameworkCore
 
 <PageTitle>Counter</PageTitle>
 
@@ -7,13 +9,21 @@
 
 <p role="status">Current count: @currentCount</p>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<button class="btn btn-primary" @onclick="GetFoods">Click me</button>
+
+<p>@Foods</p>
 
 @code {
     private int currentCount = 0;
 
+    List<Food> Foods = new List<Food>();
     private void IncrementCount()
     {
         currentCount++;
+    }
+
+    public async void GetFoods()
+    {
+        Foods = await context.Foods.ToListAsync();
     }
 }
