@@ -1,0 +1,89 @@
+@page "/foods/create"
+@using Microsoft.EntityFrameworkCore
+@using FitnessTracker.Models
+@inject IDbContextFactory<FitnessTracker.Models.FitnessTrackerContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>Food</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Food" OnValidSubmit="AddFood" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="foodname" class="form-label">FoodName:</label> 
+                <InputText id="foodname" @bind-Value="Food.FoodName" class="form-control" /> 
+                <ValidationMessage For="() => Food.FoodName" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="foodgroup" class="form-label">FoodGroup:</label> 
+                <InputText id="foodgroup" @bind-Value="Food.FoodGroup" class="form-control" /> 
+                <ValidationMessage For="() => Food.FoodGroup" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="foodsubgroup" class="form-label">FoodSubGroup:</label> 
+                <InputText id="foodsubgroup" @bind-Value="Food.FoodSubGroup" class="form-control" /> 
+                <ValidationMessage For="() => Food.FoodSubGroup" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="notes" class="form-label">Notes:</label> 
+                <InputText id="notes" @bind-Value="Food.Notes" class="form-control" /> 
+                <ValidationMessage For="() => Food.Notes" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="amount" class="form-label">Amount:</label> 
+                <InputNumber id="amount" @bind-Value="Food.Amount" class="form-control" /> 
+                <ValidationMessage For="() => Food.Amount" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="calories" class="form-label">Calories:</label> 
+                <InputNumber id="calories" @bind-Value="Food.Calories" class="form-control" /> 
+                <ValidationMessage For="() => Food.Calories" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="protein" class="form-label">Protein:</label> 
+                <InputNumber id="protein" @bind-Value="Food.Protein" class="form-control" /> 
+                <ValidationMessage For="() => Food.Protein" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="fat" class="form-label">Fat:</label> 
+                <InputNumber id="fat" @bind-Value="Food.Fat" class="form-control" /> 
+                <ValidationMessage For="() => Food.Fat" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="carbohydrates" class="form-label">Carbohydrates:</label> 
+                <InputNumber id="carbohydrates" @bind-Value="Food.Carbohydrates" class="form-control" /> 
+                <ValidationMessage For="() => Food.Carbohydrates" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="fiber" class="form-label">Fiber:</label> 
+                <InputNumber id="fiber" @bind-Value="Food.Fiber" class="form-control" /> 
+                <ValidationMessage For="() => Food.Fiber" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/foods">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private Food Food { get; set; } = new();
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddFood()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Foods.Add(Food);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/foods");
+    }
+}

@@ -1,0 +1,44 @@
+@page "/foods"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using FitnessTracker.Models
+@implements IAsyncDisposable
+@inject IDbContextFactory<FitnessTracker.Models.FitnessTrackerContext> DbFactory
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<p>
+    <a href="foods/create">Create New</a>
+</p>
+
+<QuickGrid Class="table" Items="context.Foods">
+    <PropertyColumn Property="food => food.FoodName" />
+    <PropertyColumn Property="food => food.FoodGroup" />
+    <PropertyColumn Property="food => food.FoodSubGroup" />
+    <PropertyColumn Property="food => food.Notes" />
+    <PropertyColumn Property="food => food.Amount" />
+    <PropertyColumn Property="food => food.Calories" />
+    <PropertyColumn Property="food => food.Protein" />
+    <PropertyColumn Property="food => food.Fat" />
+    <PropertyColumn Property="food => food.Carbohydrates" />
+    <PropertyColumn Property="food => food.Fiber" />
+
+    <TemplateColumn Context="food">
+        <a href="@($"foods/edit?foodid={food.FoodId}")">Edit</a> |
+        <a href="@($"foods/details?foodid={food.FoodId}")">Details</a> |
+        <a href="@($"foods/delete?foodid={food.FoodId}")">Delete</a>
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+    private FitnessTrackerContext context = default!;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}
