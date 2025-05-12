@@ -1,6 +1,7 @@
 ﻿@page "/counter"
 @rendermode InteractiveServer
 @inject FitnessTrackerContext context
+@using FitnessTracker.Models
 @using Microsoft.EntityFrameworkCore
 
 <PageTitle>Counter</PageTitle>
@@ -11,7 +12,7 @@
 
 <button class="btn btn-primary" @onclick="GetFoods">Click me</button>
 
-<p>@Foods</p>
+<p>@if (Foods.Count != 0) {Foods.ToList();}</p>
 
 @code {
     private int currentCount = 0;
