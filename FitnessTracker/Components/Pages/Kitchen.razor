@@ -47,7 +47,7 @@
                         <EditTemplate Context="food">
                             <RadzenNumeric @bind-Value="food.Amount" Name="foodamount"/>
                             <RadzenRequiredValidator Text="Amount is required" Component="foodamount" Popup="true"/>
-                        </EditTemplate>Property
+                        </EditTemplate>
                     </RadzenDataGridColumn>
                     <RadzenDataGridColumn Property="@nameof(Food.Protein)" Title="Protein (g)">
                         <EditTemplate Context="food">
@@ -71,7 +71,7 @@
                         </EditTemplate>
                     </RadzenDataGridColumn>
                     <RadzenDataGridColumn Context="food" Title="Editing" TextAlign="TextAlign.Center" Frozen="true" FrozenPosition="FrozenColumnPosition.Right" Width="150px">
-                        <Template Context="food">
+                        <EditTemplate Context="food">
                             <RadzenButton Icon="edit" Shade="Shade.Dark"Propertyk" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => CancelEdit(food))" />
                         </EditTemplate>
                     </RadzenDataGridColumn>
