@@ -10,86 +10,114 @@
 <PageTitle>Kitchen</PageTitle>
 <h1>Kitchen</h1>
 
-<RadzenDataGrid @ref="FoodsDataGrid" Data="@Foods" ColumnWidth="125px" TItem="Food"
-    Style="height: 100%; width: 75vw" EditMode="DataGridEditMode.Single" >
-    <HeaderTemplate>
-        <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Icon="add_circle" Text="Add Food" Click="@AddFood"/>
-    </HeaderTemplate>
-    <Columns>
-        <RadzenDataGridColumn Property="@nameof(Food.FoodName)" Title="Name" Frozen="true" FrozenPosition="FrozenColumnPosition.Left">
-            <EditTemplate Context="food">
-                <RadzenTextBox @bind-Value="food.FoodName" Name="foodname" MaxLength="50"/>
-                <RadzenRequiredValidator Text="Name is required" Component="foodname" Popup="true"/>
-            </EditTemplate>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn Property="@nameof(Food.FoodGroup)" Title="Group">
-            <EditTemplate Context="food">
-                <RadzenTextBox @bind-Value="food.FoodGroup" Name="foodgroup" MaxLength="50"/>
-                <RadzenRequiredValidator Text="'Group is required" Component="foodgroup" Popup="true"/>
-            </EditTemplate>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn Property="@nameof(Food.FoodSubGroup)" Title="Sub-Group">
-            <EditTemplate Context="food">
-                <RadzenTextBox @bind-Value="food.FoodSubGroup" Name="foodsubgroup" MaxLength="50"/>
-                <RadzenRequiredValidator Text="Sub-group is required" Component="foodsubgroup" Popup="true"/>
-            </EditTemplate>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn Property="@nameof(Food.Notes)" Title="Notes">
-            <EditTemplate Context="food">
-                <RadzenTextBox @bind-Value="food.Notes" Name="foodnotes"/>
-            </EditTemplate>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn Property="@nameof(Food.Amount)" Title="Amount (g)">
-            <EditTemplate Context="food">
-                <RadzenNumeric @bind-Value="food.Amount" Name="foodamount"/>
-                <RadzenRequiredValidator Text="Amount is required" Component="foodamount" Popup="true"/>
-            </EditTemplate>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn Property="@nameof(Food.Calories)" Title="Calories (kcal)">
-            <EditTemplate Context="food">
-                <RadzenNumeric @bind-Value="food.Calories" Name="foodcalories"/>
-                <RadzenRequiredValidator Text="Calories are required" Component="foodcalories" Popup="true"/>
-            </EditTemplate>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn Property="@nameof(Food.Protein)" Title="Protein (g)">
-            <EditTemplate Context="food">
-                <RadzenNumeric @bind-Value="food.Protein" Name="foodprotein"/>
-                <RadzenRequiredValidator Text="Protein is required" Component="foodprotein" Popup="true"/>
-            </EditTemplate>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn Property="@nameof(Food.Fat)" Title="Fat (g)">
-            <EditTemplate Context="food">
-                <RadzenNumeric @bind-Value="food.Fat" Name="foodfat"/>
-            </EditTemplate>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn Property="@nameof(Food.Carbohydrates)" Title="Carbohydrates (g)">
-            <EditTemplate Context="food">
-                <RadzenNumeric @bind-Value="food.Carbohydrates" Name="foodcarbs" />
-            </EditTemplate>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn Property="@nameof(Food.Fiber)" Title="Fiber (g)">
-            <EditTemplate Context="food">
-                <RadzenNumeric @bind-Value="food.Fiber" Name="foodfiber" />
-            </EditTemplate>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn Context="food" Title="Editing" TextAlign="TextAlign.Center" Frozen="true" FrozenPosition="FrozenColumnPosition.Right" Width="150px">
-            <Template Context="food">
-                <RadzenButton Icon="edit" Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => EditFood(food))" @onclick:stopPropagation="true" Disabled="@IsEditing"/>
-                <RadzenButton Icon="delete" Shade="Shade.Dark" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => DeleteFood(food))" @onclick:stopPropagation="true" Disabled="@IsEditing"/>
-            </Template>
-            <EditTemplate Context="food">
-                <RadzenButton Icon="check" Shade="Shade.Dark" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => ConfirmEdit(food))" />
-                <RadzenButton Icon="close" Shade="Shade.Dark" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => CancelEdit(food))" />
-            </EditTemplate>
-        </RadzenDataGridColumn>
-    </Columns>
-</RadzenDataGrid>
+<RadzenTabs TabPosition="TabPosition.Top" RenderMode="TabRenderMode.Client">
+    <Tabs>
+
+        <RadzenTabsItem Text="Ingredients">
+            <RadzenDataGrid @ref="FoodsDataGrid" Data="@Foods" ColumnWidth="125px" TItem="Food"
+                Style="height: 100%; width: 75vw" EditMode="DataGridEditMode.Single" >
+                <HeaderTemplate>
+                    <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Icon="add_circle" Text="Add Food" Click="@AddFood"/>
+                </HeaderTemplate>
+                <Columns>
+                    <RadzenDataGridColumn Property="@nameof(Food.FoodName)" Title="Name" Frozen="true" FrozenPosition="FrozenColumnPosition.Left">
+                        <EditTemplate Context="food">
+                            <RadzenTextBox @bind-Value="food.FoodName" Name="foodname" MaxLength="50"/>
+                            <RadzenRequiredValidator Text="Name is required" Component="foodname" Popup="true"/>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn Property="@nameof(Food.FoodGroup)" Title="Group">
+                        <EditTemplate Context="food">
+                            <RadzenTextBox @bind-Value="food.FoodGroup" Name="foodgroup" MaxLength="50"/>
+                            <RadzenRequiredValidator Text="'Group is required" Component="foodgroup" Popup="true"/>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn Property="@nameof(Food.FoodSubGroup)" Title="Sub-Group">
+                        <EditTemplate Context="food">
+                            <RadzenTextBox @bind-Value="food.FoodSubGroup" Name="foodsubgroup" MaxLength="50"/>
+                            <RadzenRequiredValidator Text="Sub-group is required" Component="foodsubgroup" Popup="true"/>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn Property="@nameof(Food.Notes)" Title="Notes">
+                        <EditTemplate Context="food">
+                            <RadzenTextBox @bind-Value="food.Notes" Name="foodnotes"/>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn Property="@nameof(Food.Amount)" Title="Amount (g)">
+                        <EditTemplate Context="food">
+                            <RadzenNumeric @bind-Value="food.Amount" Name="foodamount"/>
+                            <RadzenRequiredValidator Text="Amount is required" Component="foodamount" Popup="true"/>
+                        </EditTemplate>Property
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn Property="@nameof(Food.Protein)" Title="Protein (g)">
+                        <EditTemplate Context="food">
+                            <RadzenNumeric @bind-Value="food.Protein" Name="foodprotein"/>
+                            <RadzenRequiredValidator Text="Protein is required" Component="foodprotein" Popup="true"/>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn Property="@nameof(Food.Fat)" Title="Fat (g)">
+                        <EditTemplate Context="food">
+                            <RadzenNumeric @bind-Value="food.Fat" Name="foodfat"/>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn Property="@nameof(Food.Carbohydrates)" Title="Carbohydrates (g)">
+                        <EditTemplate Context="food">
+                            <RadzenNumeric @bind-Value="food.Carbohydrates" Name="foodcarbs" />
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn Property="@nameof(Food.Fiber)" Title="Fiber (g)">
+                        <EditTemplate Context="food">
+                            <RadzenNumeric @bind-Value="food.Fiber" Name="foodfiber" />
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn Context="food" Title="Editing" TextAlign="TextAlign.Center" Frozen="true" FrozenPosition="FrozenColumnPosition.Right" Width="150px">
+                        <Template Context="food">
+                            <RadzenButton Icon="edit" Shade="Shade.Dark"Propertyk" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => CancelEdit(food))" />
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenTabsItem>
+
+        <RadzenTabsItem Text="Meals">
+            <RadzenDataGrid @ref="@MealsDataGrid" Data="@Meals" ColumnWidth="125px" TItem="Meal"
+            Style="height: 100%; width: 75vw">
+                <HeaderTemplate>
+                    <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Icon="add_circle" Text="Add Food" Click="@AddMeal"/>
+                </HeaderTemplate>
+                <Template Context="meal">
+                    <RadzenDataGrid Data="@(meal.Foods)">
+                        <Columns>
+                            <RadzenDataGridColumn Property="@nameof(Food.FoodName)" Title="Name" Frozen="true" FrozenPosition="FrozenColumnPosition.Left"/>
+                            <RadzenDataGridColumn Property="@nameof(Food.FoodGroup)" Title="Group"/>
+                            <RadzenDataGridColumn Property="@nameof(Food.Notes)" Title="Notes"/>
+                            <RadzenDataGridColumn Property="@nameof(Food.Amount)" Title="Amount (g)"/>
+                        </Columns>
+                    </RadzenDataGrid>
+                </Template>
+                <Columns>
+                    <RadzenDataGridColumn Property="@nameof(Meal.MealName)" Title="Name" Frozen="true" FrozenPosition="FrozenColumnPosition.Left"/>
+                    <RadzenDataGridColumn Property="@nameof(Meal.Method)" Title="Method"/>
+                    <RadzenDataGridColumn Property="@nameof(Meal.Notes)" Title="Notes"/>
+                    <RadzenDataGridColumn Property="@nameof(Meal.Calories)" Title="Calories (kcal)"/>
+                    <RadzenDataGridColumn Property="@nameof(Meal.Protein)" Title="Protein (g)"/>
+                    <RadzenDataGridColumn Property="@nameof(Meal.Fat)" Title="Fat (g)"/>
+                    <RadzenDataGridColumn Property="@nameof(Meal.Carbohydrates)" Title="Carbohydrates (g)"/>
+                    <RadzenDataGridColumn Property="@nameof(Meal.Fiber)" Title="Fiber (g)"/>
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenTabsItem>
+
+    </Tabs>
+</RadzenTabs>
 
 @code
 {
     private FitnessTrackerContext context = default!;
     public required List<Food> Foods { get;set; }
+    public required List<Meal> Meals { get; set; }
     public required RadzenDataGrid<Food> FoodsDataGrid;
+    public required RadzenDataGrid<Meal> MealsDataGrid;
     public required bool IsEditing = false;
 
     protected override async Task OnInitializedAsync()
@@ -155,5 +183,10 @@
                 foodEntry.State = EntityState.Unchanged;
             }
         }
+    }
+
+    public void AddMeal()
+    {
+
     }
 }
