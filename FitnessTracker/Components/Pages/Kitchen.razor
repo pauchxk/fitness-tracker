@@ -1,4 +1,5 @@
 @page "/Kitchen"
+@rendermode InteractiveServer
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using FitnessTracker.Models
@@ -35,7 +36,7 @@
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Property="@nameof(Food.Notes)" Title="Notes">
             <EditTemplate Context="food">
-                <RadzenTextBox @bind-Value="food.Notes" Name="foodnotes" MaxLength="50"/>
+                <RadzenTextBox @bind-Value="food.Notes" Name="foodnotes"/>
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Property="@nameof(Food.Amount)" Title="Amount (g)">
@@ -107,7 +108,6 @@
         Food newFood = new Food();
         IsEditing = true;
         await FoodsDataGrid.InsertRow(newFood);
-        await FoodsDataGrid.Reload();
     }
 
     public async void EditFood(Food food)
@@ -130,6 +130,9 @@
 
         context.Foods.Update(food);
         context.SaveChanges();
+
+        if (!Foods.Contains(food))
+        { Foods.Add(food); }
 
         await FoodsDataGrid.Reload();
         StateHasChanged();
