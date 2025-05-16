@@ -71,8 +71,13 @@
                         </EditTemplate>
                     </RadzenDataGridColumn>
                     <RadzenDataGridColumn Context="food" Title="Editing" TextAlign="TextAlign.Center" Frozen="true" FrozenPosition="FrozenColumnPosition.Right" Width="150px">
+                        <Template Context="food">
+                            <RadzenButton Icon="edit" Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => EditFood(food))" @onclick:stopPropagation="true" Disabled="@IsEditing"/>
+                            <RadzenButton Icon="delete" Shade="Shade.Dark" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => DeleteFood(food))" @onclick:stopPropagation="true" Disabled="@IsEditing"/>
+                        </Template>
                         <EditTemplate Context="food">
-                            <RadzenButton Icon="edit" Shade="Shade.Dark"Propertyk" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => CancelEdit(food))" />
+                            <RadzenButton Icon="check" Shade="Shade.Dark" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => ConfirmEdit(food))" />
+                            <RadzenButton Icon="close" Shade="Shade.Dark" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => CancelEdit(food))" />
                         </EditTemplate>
                     </RadzenDataGridColumn>
                 </Columns>
@@ -144,11 +149,12 @@
         await FoodsDataGrid.EditRow(food);
     }
 
-    public void DeleteFood(Food food)
+    public async void DeleteFood(Food food)
     {
         Foods.Remove(food);
         context.Foods.Remove(food);
         context.SaveChanges();
+        await FoodsDataGrid.Reload();
     }
 
     public async void ConfirmEdit(Food food)
