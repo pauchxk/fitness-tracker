@@ -15,34 +15,59 @@ public partial class FitnessTrackerContext : DbContext
     {
     }
 
+    public virtual DbSet<DailyFood> DailyFoods { get; set; }
+
     public virtual DbSet<DailyLog> DailyLogs { get; set; }
 
     public virtual DbSet<DailyWorkout> DailyWorkouts { get; set; }
 
-    public virtual DbSet<DailyWorkoutBreakdown> DailyWorkoutBreakdowns { get; set; }
-
     public virtual DbSet<Exercise> Exercises { get; set; }
 
+    public virtual DbSet<ExercisesInWorkout> ExercisesInWorkouts { get; set; }
+
     public virtual DbSet<Food> Foods { get; set; }
+
+    public virtual DbSet<FoodInMeal> FoodInMeals { get; set; }
 
     public virtual DbSet<Goal> Goals { get; set; }
 
     public virtual DbSet<Meal> Meals { get; set; }
 
-    public virtual DbSet<MealsInLog> MealsInLogs { get; set; }
-
     public virtual DbSet<PersonalRecord> PersonalRecords { get; set; }
 
     public virtual DbSet<UserProfile> UserProfiles { get; set; }
 
-    public virtual DbSet<Workout> Workouts { get; set; }
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Data Source=localhost,1433;Initial Catalog=fitness_tracker;TrustServerCertificate=True;User ID=sa;Password=Twojays37a!");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.UseCollation("Latin1_General_CI_AS");
+
+        modelBuilder.Entity<DailyFood>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("Daily_Foods");
+
+            entity.Property(e => e.Amount).HasColumnType("decimal(2, 0)");
+            entity.Property(e => e.FoodId).HasColumnName("Food_ID");
+            entity.Property(e => e.LogId).HasColumnName("Log_ID");
+            entity.Property(e => e.MealId).HasColumnName("Meal_ID");
+
+            entity.HasOne(d => d.Food).WithMany()
+                .HasForeignKey(d => d.FoodId)
+                .HasConstraintName("Food_ID");
+
+            entity.HasOne(d => d.Log).WithMany()
+                .HasForeignKey(d => d.LogId)
+                .HasConstraintName("Log_ID");
+
+            entity.HasOne(d => d.Meal).WithMany()
+                .HasForeignKey(d => d.MealId)
+                .HasConstraintName("Meal_ID");
+        });
 
         modelBuilder.Entity<DailyLog>(entity =>
         {
@@ -78,35 +103,6 @@ public partial class FitnessTrackerContext : DbContext
                 .HasConstraintName("FK_Daily_Workout_Daily_Log1");
         });
 
-        modelBuilder.Entity<DailyWorkoutBreakdown>(entity =>
-        {
-            entity.HasKey(e => new { e.BreakdownId, e.DworkoutId });
-
-            entity.ToTable("Daily_Workout_Breakdown");
-
-            entity.Property(e => e.BreakdownId)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("Breakdown_ID");
-            entity.Property(e => e.DworkoutId).HasColumnName("DWorkout_ID");
-            entity.Property(e => e.ExerciseId).HasColumnName("Exercise_ID");
-            entity.Property(e => e.PreWorkout).HasColumnName("Pre-Workout");
-            entity.Property(e => e.Weight).HasColumnType("decimal(5, 2)");
-            entity.Property(e => e.WorkoutId).HasColumnName("Workout_ID");
-
-            entity.HasOne(d => d.Dworkout).WithMany(p => p.DailyWorkoutBreakdowns)
-                .HasForeignKey(d => d.DworkoutId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Daily_Workout_Breakdown_Daily_Workout");
-
-            entity.HasOne(d => d.Exercise).WithMany(p => p.DailyWorkoutBreakdowns)
-                .HasForeignKey(d => d.ExerciseId)
-                .HasConstraintName("FK_Daily_Workout_Breakdown_Exercises");
-
-            entity.HasOne(d => d.Workout).WithMany(p => p.DailyWorkoutBreakdowns)
-                .HasForeignKey(d => d.WorkoutId)
-                .HasConstraintName("FK_Daily_Workout_Breakdown_Workouts");
-        });
-
         modelBuilder.Entity<Exercise>(entity =>
         {
             entity.Property(e => e.ExerciseId).HasColumnName("Exercise_ID");
@@ -127,25 +123,29 @@ public partial class FitnessTrackerContext : DbContext
             entity.Property(e => e.ReccommendedRepsSets)
                 .HasMaxLength(50)
                 .HasColumnName("Reccommended_Reps_Sets");
+        });
 
-            entity.HasMany(d => d.Workouts).WithMany(p => p.Exercises)
-                .UsingEntity<Dictionary<string, object>>(
-                    "ExercisesInWorkout",
-                    r => r.HasOne<Workout>().WithMany()
-                        .HasForeignKey("WorkoutId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_Exercises_in_Workout_Workouts"),
-                    l => l.HasOne<Exercise>().WithMany()
-                        .HasForeignKey("ExerciseId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_Exercises_in_Workout_Exercises"),
-                    j =>
-                    {
-                        j.HasKey("ExerciseId", "WorkoutId");
-                        j.ToTable("Exercises_in_Workout");
-                        j.IndexerProperty<int>("ExerciseId").HasColumnName("Exercise_ID");
-                        j.IndexerProperty<int>("WorkoutId").HasColumnName("Workout_ID");
-                    });
+        modelBuilder.Entity<ExercisesInWorkout>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("Exercises_in_Workout");
+
+            entity.Property(e => e.DworkoutId).HasColumnName("DWorkout_ID");
+            entity.Property(e => e.ExerciseId).HasColumnName("Exercise_ID");
+            entity.Property(e => e.Notes).HasMaxLength(500);
+            entity.Property(e => e.Rpe).HasColumnName("RPE");
+            entity.Property(e => e.Weight).HasColumnType("decimal(2, 0)");
+
+            entity.HasOne(d => d.Dworkout).WithMany()
+                .HasForeignKey(d => d.DworkoutId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("DWorkout_ID");
+
+            entity.HasOne(d => d.Exercise).WithMany()
+                .HasForeignKey(d => d.ExerciseId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("Exercise_ID");
         });
 
         modelBuilder.Entity<Food>(entity =>
@@ -163,25 +163,27 @@ public partial class FitnessTrackerContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("Food_SubGroup");
             entity.Property(e => e.Notes).HasMaxLength(500);
+        });
 
-            entity.HasMany(d => d.Meals).WithMany(p => p.Foods)
-                .UsingEntity<Dictionary<string, object>>(
-                    "FoodsInMeal",
-                    r => r.HasOne<Meal>().WithMany()
-                        .HasForeignKey("MealId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_Foods_in_Meal_Meals"),
-                    l => l.HasOne<Food>().WithMany()
-                        .HasForeignKey("FoodId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_Foods_in_Meal_Foods"),
-                    j =>
-                    {
-                        j.HasKey("FoodId", "MealId");
-                        j.ToTable("Foods_in_Meal");
-                        j.IndexerProperty<int>("FoodId").HasColumnName("Food_ID");
-                        j.IndexerProperty<int>("MealId").HasColumnName("Meal_ID");
-                    });
+        modelBuilder.Entity<FoodInMeal>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("Food_in_Meal");
+
+            entity.Property(e => e.Amount).HasColumnType("decimal(2, 0)");
+            entity.Property(e => e.FoodId).HasColumnName("Food_ID");
+            entity.Property(e => e.MealId).HasColumnName("Meal_ID");
+
+            entity.HasOne(d => d.Food).WithMany()
+                .HasForeignKey(d => d.FoodId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("Food_ID2");
+
+            entity.HasOne(d => d.Meal).WithMany()
+                .HasForeignKey(d => d.MealId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("Meal_ID2");
         });
 
         modelBuilder.Entity<Goal>(entity =>
@@ -211,30 +213,6 @@ public partial class FitnessTrackerContext : DbContext
             entity.Property(e => e.Notes).HasMaxLength(500);
         });
 
-        modelBuilder.Entity<MealsInLog>(entity =>
-        {
-            entity.HasKey(e => new { e.LogId, e.MealId });
-
-            entity.ToTable("Meals_in_Log");
-
-            entity.Property(e => e.LogId).HasColumnName("Log_ID");
-            entity.Property(e => e.MealId).HasColumnName("Meal_ID");
-            entity.Property(e => e.MealType)
-                .HasMaxLength(50)
-                .HasColumnName("Meal_Type");
-            entity.Property(e => e.Notes).HasMaxLength(500);
-
-            entity.HasOne(d => d.Log).WithMany(p => p.MealsInLogs)
-                .HasForeignKey(d => d.LogId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Meals_in_Log_Daily_Log");
-
-            entity.HasOne(d => d.Meal).WithMany(p => p.MealsInLogs)
-                .HasForeignKey(d => d.MealId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Meals_in_Log_Meals");
-        });
-
         modelBuilder.Entity<PersonalRecord>(entity =>
         {
             entity.ToTable("Personal_Records");
@@ -262,21 +240,6 @@ public partial class FitnessTrackerContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("User_Name");
             entity.Property(e => e.Weight).HasColumnType("decimal(5, 2)");
-        });
-
-        modelBuilder.Entity<Workout>(entity =>
-        {
-            entity.Property(e => e.WorkoutId).HasColumnName("Workout_ID");
-            entity.Property(e => e.MuscleGroups)
-                .HasMaxLength(100)
-                .HasColumnName("Muscle_Groups");
-            entity.Property(e => e.Notes).HasMaxLength(500);
-            entity.Property(e => e.OverallGoal)
-                .HasMaxLength(50)
-                .HasColumnName("Overall_Goal");
-            entity.Property(e => e.WorkoutName)
-                .HasMaxLength(50)
-                .HasColumnName("Workout_Name");
         });
 
         OnModelCreatingPartial(modelBuilder);

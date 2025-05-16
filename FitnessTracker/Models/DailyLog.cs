@@ -18,6 +18,4 @@ public partial class DailyLog
     public int? Steps { get; set; }
 
     public virtual ICollection<DailyWorkout> DailyWorkouts { get; set; } = new List<DailyWorkout>();
-
-    public virtual ICollection<MealsInLog> MealsInLogs { get; set; } = new List<MealsInLog>();
 }

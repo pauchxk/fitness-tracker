@@ -80,8 +80,8 @@
         </RadzenTabsItem>
 
         <RadzenTabsItem Text="Meals">
-            <RadzenDataGrid @ref="@MealsDataGrid" Data="@Meals" ColumnWidth="125px" TItem="Meal"
-            Style="height: 100%; width: 75vw">
+            @* <RadzenDataGrid @ref="@MealsDataGrid" Data="@Meals" ColumnWidth="125px" TItem="Meal"
+                    Style="height: 100%; width: 75vw">
                 <HeaderTemplate>
                     <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Icon="add_circle" Text="Add Food" Click="@AddMeal"/>
                 </HeaderTemplate>
@@ -105,7 +105,7 @@
                     <RadzenDataGridColumn Property="@nameof(Meal.Carbohydrates)" Title="Carbohydrates (g)"/>
                     <RadzenDataGridColumn Property="@nameof(Meal.Fiber)" Title="Fiber (g)"/>
                 </Columns>
-            </RadzenDataGrid>
+            </RadzenDataGrid> *@
         </RadzenTabsItem>
 
     </Tabs>

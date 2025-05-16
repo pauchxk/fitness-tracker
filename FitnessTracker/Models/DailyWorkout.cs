@@ -13,7 +13,5 @@ public partial class DailyWorkout
 
     public string? Notes { get; set; }
 
-    public virtual ICollection<DailyWorkoutBreakdown> DailyWorkoutBreakdowns { get; set; } = new List<DailyWorkoutBreakdown>();
-
     public virtual DailyLog Log { get; set; } = null!;
 }
