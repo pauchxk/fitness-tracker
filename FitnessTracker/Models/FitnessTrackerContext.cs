@@ -211,6 +211,7 @@ public partial class FitnessTrackerContext : DbContext
                 .HasColumnName("Meal_Name");
             entity.Property(e => e.Method).HasMaxLength(500);
             entity.Property(e => e.Notes).HasMaxLength(500);
+            entity.Property(e => e.Type).HasMaxLength(50);
         });
 
         modelBuilder.Entity<PersonalRecord>(entity =>

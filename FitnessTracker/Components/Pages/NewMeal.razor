@@ -1,0 +1,49 @@
+@page "/New-Meal"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using FitnessTracker.Models
+@using Radzen
+@using Radzen.Blazor
+@inject IDbContextFactory<FitnessTracker.Models.FitnessTrackerContext> DbFactory
+
+<PageTitle>New Meal</PageTitle>
+<h1>Create a Meal</h1>
+
+<RadzenStack Orientation="Orientation.Vertical" Style="height: 100%; width: 100%" class="rz-p-sm-1">
+    
+    <RadzenCard Variant="Variant.Outlined" Style="height: 20%; width: 100%">
+        <RadzenStack Orientation="Orientation.Horizontal" Style="height: 100%; width: 100%">
+            <RadzenFormField Text="Name" Variant="Variant.Flat">
+                <RadzenTextBox @bind-Value="@Meal.MealName"/>
+            </RadzenFormField>
+            <RadzenFormField Text="Type" Variant="Variant.Flat">
+                <RadzenTextBox @bind-Value="@Meal.Type"/>
+            </RadzenFormField>
+            <RadzenFormField Text="Method" Variant="Variant.Flat">
+                <RadzenTextArea @bind-Value="@Meal.Method"/>
+            </RadzenFormField>
+            <RadzenFormField Text="Notes" Variant="Variant.Flat">
+                <RadzenTextArea @bind-Value="@Meal.Notes"/>
+            </RadzenFormField>
+        </RadzenStack>
+    </RadzenCard>
+
+</RadzenStack>
+
+@code
+{
+    private FitnessTrackerContext context = default!;
+    public required Meal Meal = new Meal();
+    public required List<Food> Foods = new List<Food>();
+
+        protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        context = DbFactory.CreateDbContext();
+
+
+        StateHasChanged();
+    }
+}

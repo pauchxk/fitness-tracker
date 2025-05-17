@@ -22,4 +22,6 @@ public partial class Meal
     public int? Carbohydrates { get; set; }
 
     public int? Fiber { get; set; }
+
+    public string Type { get; set; } = null!;
 }
