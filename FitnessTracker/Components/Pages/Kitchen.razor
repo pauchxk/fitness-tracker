@@ -85,18 +85,18 @@
         </RadzenTabsItem>
 
         <RadzenTabsItem Text="Meals">
-            @* <RadzenDataGrid @ref="@MealsDataGrid" Data="@Meals" ColumnWidth="125px" TItem="Meal"
+            <RadzenDataGrid @ref="@MealsDataGrid" Data="@Meals" ColumnWidth="125px" TItem="Meal"
                     Style="height: 100%; width: 75vw">
                 <HeaderTemplate>
-                    <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Icon="add_circle" Text="Add Food" Click="@AddMeal"/>
+                    <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Icon="add_circle" Text="New Meal" Click="@AddMeal"/>
                 </HeaderTemplate>
                 <Template Context="meal">
-                    <RadzenDataGrid Data="@(meal.Foods)">
+                    <RadzenDataGrid Data="@(FoodsInMeals.FindAll(x => x.MealId == meal.MealId))">
                         <Columns>
                             <RadzenDataGridColumn Property="@nameof(Food.FoodName)" Title="Name" Frozen="true" FrozenPosition="FrozenColumnPosition.Left"/>
                             <RadzenDataGridColumn Property="@nameof(Food.FoodGroup)" Title="Group"/>
                             <RadzenDataGridColumn Property="@nameof(Food.Notes)" Title="Notes"/>
-                            <RadzenDataGridColumn Property="@nameof(Food.Amount)" Title="Amount (g)"/>
+                            <RadzenDataGridColumn Property="@nameof(FoodInMeal.Amount)" Title="Amount (g)"/>
                         </Columns>
                     </RadzenDataGrid>
                 </Template>
@@ -110,7 +110,7 @@
                     <RadzenDataGridColumn Property="@nameof(Meal.Carbohydrates)" Title="Carbohydrates (g)"/>
                     <RadzenDataGridColumn Property="@nameof(Meal.Fiber)" Title="Fiber (g)"/>
                 </Columns>
-            </RadzenDataGrid> *@
+            </RadzenDataGrid>
         </RadzenTabsItem>
 
     </Tabs>
@@ -121,6 +121,7 @@
     private FitnessTrackerContext context = default!;
     public required List<Food> Foods { get;set; }
     public required List<Meal> Meals { get; set; }
+    public required List<FoodInMeal> FoodsInMeals { get; set; }
     public required RadzenDataGrid<Food> FoodsDataGrid;
     public required RadzenDataGrid<Meal> MealsDataGrid;
     public required bool IsEditing = false;
@@ -131,6 +132,7 @@
 
         context = DbFactory.CreateDbContext();
         Foods = await context.Foods.ToListAsync();
+        FoodsInMeals = await context.FoodInMeals.ToListAsync();
 
         await FoodsDataGrid.Reload();
         StateHasChanged();
