@@ -47,25 +47,22 @@ public partial class FitnessTrackerContext : DbContext
 
         modelBuilder.Entity<DailyFood>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("Daily_Foods");
+            entity.HasKey(e => new { e.LogId, e.MealId }).HasName("Daily_Foods_PK");
 
-            entity.Property(e => e.Amount).HasColumnType("decimal(2, 0)");
-            entity.Property(e => e.FoodId).HasColumnName("Food_ID");
+            entity.ToTable("Daily_Foods");
+
             entity.Property(e => e.LogId).HasColumnName("Log_ID");
             entity.Property(e => e.MealId).HasColumnName("Meal_ID");
+            entity.Property(e => e.Amount).HasColumnType("decimal(2, 0)");
 
-            entity.HasOne(d => d.Food).WithMany()
-                .HasForeignKey(d => d.FoodId)
-                .HasConstraintName("Food_ID");
-
-            entity.HasOne(d => d.Log).WithMany()
+            entity.HasOne(d => d.Log).WithMany(p => p.DailyFoods)
                 .HasForeignKey(d => d.LogId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("Log_ID");
 
-            entity.HasOne(d => d.Meal).WithMany()
+            entity.HasOne(d => d.Meal).WithMany(p => p.DailyFoods)
                 .HasForeignKey(d => d.MealId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("Meal_ID");
         });
 
@@ -167,20 +164,19 @@ public partial class FitnessTrackerContext : DbContext
 
         modelBuilder.Entity<FoodInMeal>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("Food_in_Meal");
+            entity.HasKey(e => new { e.MealId, e.FoodId }).HasName("Food_in_Meal_PK");
 
-            entity.Property(e => e.Amount).HasColumnType("decimal(2, 0)");
-            entity.Property(e => e.FoodId).HasColumnName("Food_ID");
+            entity.ToTable("Food_in_Meal");
+
             entity.Property(e => e.MealId).HasColumnName("Meal_ID");
+            entity.Property(e => e.FoodId).HasColumnName("Food_ID");
 
-            entity.HasOne(d => d.Food).WithMany()
+            entity.HasOne(d => d.Food).WithMany(p => p.FoodInMeals)
                 .HasForeignKey(d => d.FoodId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("Food_ID2");
 
-            entity.HasOne(d => d.Meal).WithMany()
+            entity.HasOne(d => d.Meal).WithMany(p => p.FoodInMeals)
                 .HasForeignKey(d => d.MealId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("Meal_ID2");

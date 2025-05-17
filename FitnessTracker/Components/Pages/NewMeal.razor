@@ -5,6 +5,7 @@
 @using FitnessTracker.Models
 @using Radzen
 @using Radzen.Blazor
+@inject NavigationManager NavigationManager
 @inject IDbContextFactory<FitnessTracker.Models.FitnessTrackerContext> DbFactory
 
 <PageTitle>New Meal</PageTitle>
@@ -12,22 +13,58 @@
 
 <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%; width: 100%" class="rz-p-sm-1">
     
-    <RadzenCard Variant="Variant.Outlined" Style="height: 20%; width: 100%">
-        <RadzenStack Orientation="Orientation.Horizontal" Style="height: 100%; width: 100%">
-            <RadzenFormField Text="Name" Variant="Variant.Flat">
-                <RadzenTextBox @bind-Value="@Meal.MealName"/>
-            </RadzenFormField>
-            <RadzenFormField Text="Type" Variant="Variant.Flat">
-                <RadzenTextBox @bind-Value="@Meal.Type"/>
-            </RadzenFormField>
-            <RadzenFormField Text="Method" Variant="Variant.Flat">
-                <RadzenTextArea @bind-Value="@Meal.Method"/>
-            </RadzenFormField>
-            <RadzenFormField Text="Notes" Variant="Variant.Flat">
-                <RadzenTextArea @bind-Value="@Meal.Notes"/>
-            </RadzenFormField>
-        </RadzenStack>
-    </RadzenCard>
+    <RadzenPanel AllowCollapse="true" Variant="Variant.Outlined" Style="height: 20%; width: 100%">
+        <HeaderTemplate>
+            <RadzenLabel>Add Meal Details</RadzenLabel>
+        </HeaderTemplate>
+        <ChildContent>
+            <RadzenCard Variant="Variant.Outlined">
+                <RadzenStack Orientation="Orientation.Horizontal" Style="height: 100%; width: 100%" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
+                    <RadzenFormField Text="Name" Variant="Variant.Flat">
+                        <RadzenTextBox @bind-Value="@Meal.MealName"/>
+                    </RadzenFormField>
+                    <RadzenFormField Text="Type" Variant="Variant.Flat">
+                        <RadzenTextBox @bind-Value="@Meal.Type"/>
+                    </RadzenFormField>
+                    <RadzenFormField Text="Method" Variant="Variant.Flat">
+                        <RadzenTextArea @bind-Value="@Meal.Method"/>
+                    </RadzenFormField>
+                    <RadzenFormField Text="Notes" Variant="Variant.Flat">
+                        <RadzenTextArea @bind-Value="@Meal.Notes"/>
+                    </RadzenFormField>
+                </RadzenStack>
+            </RadzenCard>
+        </ChildContent>
+    </RadzenPanel>
+
+    <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%; width: 100%" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.Start">
+        <RadzenDataGrid @ref="@FoodsInMealDataGrid" Data="@FoodsInMeal" Style="height: 100%; width: 100%" Context="foodinmeal" Density="Density.Compact">
+            <Columns>
+                <RadzenDataGridColumn Property="Food.FoodName" Title="Name">
+                    <EditTemplate Context="foodinmeal">
+                        <RadzenDropDown @bind-Value=@foodinmeal.FoodId TextProperty="@nameof(Food.FoodName)" ValueProperty="@nameof(Food.FoodId)" Data=@Foods/>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Property="@nameof(FoodInMeal.Amount)" Title="Amount">
+                    <EditTemplate Context="foodinmeal">
+                        <RadzenNumeric @bind-Value="@foodinmeal.Amount" Placeholder="Enter Amount (g)"/>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Context="foodinmeal" TextAlign="TextAlign.Center" Frozen="true" FrozenPosition="FrozenColumnPosition.Right" Width="150px">
+                    <Template Context="foodinmeal">
+                        <RadzenButton Icon="delete" Shade="Shade.Dark" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => DeleteFood(foodinmeal))" @onclick:stopPropagation="true" Disabled="@IsEditing"/>
+                    </Template>
+                    <EditTemplate Context="foodinmeal">
+                        <RadzenButton Icon="check" Shade="Shade.Dark" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => ConfirmFood(foodinmeal))" />
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenStack>
+
+    <RadzenRow AlignItems="AlignItems.End" JustifyContent="JustifyContent.End" Gap="0.5rem">
+        <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Success" Text="Submit New Meal" Click="@SubmitMeal" Style="width: 30%"/>
+    </RadzenRow>
 
 </RadzenStack>
 
@@ -36,14 +73,71 @@
     private FitnessTrackerContext context = default!;
     public required Meal Meal = new Meal();
     public required List<Food> Foods = new List<Food>();
+    public required List<FoodInMeal> FoodsInMeal = new List<FoodInMeal>();
+    public required RadzenDataGrid<FoodInMeal> FoodsInMealDataGrid;
+    public required bool IsEditing = false;
 
-        protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
         context = DbFactory.CreateDbContext();
+        Foods = await context.Foods.ToListAsync();
 
+        var newfoodinmeal = new FoodInMeal();
+        await FoodsInMealDataGrid.InsertRow(newfoodinmeal);
 
         StateHasChanged();
+    }
+
+    async void NewFood()
+    {
+        var newfoodinmeal = new FoodInMeal();
+        await FoodsInMealDataGrid.InsertRow(newfoodinmeal);
+    }
+
+    async void DeleteFood(FoodInMeal foodinmeal)
+    {
+        FoodsInMeal.Remove(foodinmeal);
+        await FoodsInMealDataGrid.Reload();
+    }
+
+    async void ConfirmFood(FoodInMeal foodinmeal)
+    {
+        IsEditing = false;
+        foodinmeal.Food = Foods.Find(x => x.FoodId == foodinmeal.FoodId);
+        foodinmeal.Meal = Meal;
+        FoodsInMeal.Add(foodinmeal);
+        await FoodsInMealDataGrid.UpdateRow(foodinmeal);
+        await FoodsInMealDataGrid.Reload();
+
+        NewFood();
+    }
+
+    async void SubmitMeal()
+    {
+        context.Meals.Add(Meal);
+        context.SaveChanges();
+
+        foreach (FoodInMeal foodinmeal in FoodsInMeal)
+        {
+            if (foodinmeal.Food != null)
+            {
+                var multiplier = foodinmeal.Amount / 100.00;
+
+                Meal.Calories = Convert.ToInt32(Meal.Calories + (foodinmeal.Food.Calories * multiplier));
+                Meal.Protein = Convert.ToInt32(Meal.Protein + (foodinmeal.Food.Protein * multiplier));
+                Meal.Fat = Convert.ToInt32(Meal.Fat + (foodinmeal.Food.Fat * multiplier));
+                Meal.Carbohydrates = Convert.ToInt32(Meal.Carbohydrates + (foodinmeal.Food.Carbohydrates * multiplier));
+                Meal.Fiber = Convert.ToInt32(Meal.Fiber + (foodinmeal.Food.Fiber * multiplier));
+
+                foodinmeal.MealId = Meal.MealId;
+                context.FoodInMeals.Add(foodinmeal);
+                context.SaveChanges();
+            }
+        }
+
+        context.Meals.Update(Meal);
+        NavigationManager.NavigateTo("/Kitchen");
     }
 }

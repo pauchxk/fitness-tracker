@@ -6,6 +6,7 @@
 @using Radzen
 @using Radzen.Blazor
 @inject IDbContextFactory<FitnessTracker.Models.FitnessTrackerContext> DbFactory
+@inject NavigationManager NavigationManager
 
 <PageTitle>Kitchen</PageTitle>
 <h1>Kitchen</h1>
@@ -47,6 +48,12 @@
                         <EditTemplate Context="food">
                             <RadzenNumeric @bind-Value="food.Amount" Name="foodamount"/>
                             <RadzenRequiredValidator Text="Amount is required" Component="foodamount" Popup="true"/>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn Property="@nameof(Food.Calories)" Title="Calories (kcal)">
+                        <EditTemplate Context="food">
+                            <RadzenNumeric @bind-Value="food.Calories" Name="foodcals"/>
+                            <RadzenRequiredValidator Text="Calories are required" Component="foodcals" Popup="true"/>
                         </EditTemplate>
                     </RadzenDataGridColumn>
                     <RadzenDataGridColumn Property="@nameof(Food.Protein)" Title="Protein (g)">
@@ -93,10 +100,10 @@
                 <Template Context="meal">
                     <RadzenDataGrid Data="@(FoodsInMeals.FindAll(x => x.MealId == meal.MealId))">
                         <Columns>
-                            <RadzenDataGridColumn Property="@nameof(Food.FoodName)" Title="Name" Frozen="true" FrozenPosition="FrozenColumnPosition.Left"/>
-                            <RadzenDataGridColumn Property="@nameof(Food.FoodGroup)" Title="Group"/>
-                            <RadzenDataGridColumn Property="@nameof(Food.Notes)" Title="Notes"/>
-                            <RadzenDataGridColumn Property="@nameof(FoodInMeal.Amount)" Title="Amount (g)"/>
+                            <RadzenDataGridColumn Property="Food.FoodName" Title="Name" Frozen="true" FrozenPosition="FrozenColumnPosition.Left"/>
+                            <RadzenDataGridColumn Property="Food.FoodGroup" Title="Group"/>
+                            <RadzenDataGridColumn Property="Food.Notes" Title="Notes"/>
+                            <RadzenDataGridColumn Property="Amount" Title="Amount (g)"/>
                         </Columns>
                     </RadzenDataGrid>
                 </Template>
@@ -132,6 +139,7 @@
 
         context = DbFactory.CreateDbContext();
         Foods = await context.Foods.ToListAsync();
+        Meals = await context.Meals.ToListAsync();
         FoodsInMeals = await context.FoodInMeals.ToListAsync();
 
         await FoodsDataGrid.Reload();
@@ -195,6 +203,6 @@
 
     public void AddMeal()
     {
-
+        NavigationManager.NavigateTo("/New-Meal");
     }
 }

@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 //For scaffolding:
 //export PATH="$PATH:$HOME/.dotnet/tools/"
-//dotnet ef dbcontext scaffold "Data Source=localhost,1433;Initial Catalog=fitness_tracker;TrustServerCertificate=True;User ID=sa;Password=Twojays37a!" Microsoft.EntityFrameworkCore.SqlServer
+//dotnet ef dbcontext scaffold "Data Source=localhost,1433;Initial Catalog=fitness_tracker;TrustServerCertificate=True;User ID=sa;Password=Twojays37a!" Microsoft.EntityFrameworkCore.SqlServer -o Models --force
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

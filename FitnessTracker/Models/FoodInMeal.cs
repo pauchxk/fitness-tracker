@@ -5,11 +5,11 @@ namespace FitnessTracker.Models;
 
 public partial class FoodInMeal
 {
-    public int FoodId { get; set; }
-
     public int MealId { get; set; }
 
-    public decimal Amount { get; set; }
+    public int Amount { get; set; }
+
+    public int FoodId { get; set; }
 
     public virtual Food Food { get; set; } = null!;
 

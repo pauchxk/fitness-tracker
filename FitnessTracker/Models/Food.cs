@@ -26,4 +26,6 @@ public partial class Food
     public int? Carbohydrates { get; set; }
 
     public int? Fiber { get; set; }
+
+    public virtual ICollection<FoodInMeal> FoodInMeals { get; set; } = new List<FoodInMeal>();
 }
