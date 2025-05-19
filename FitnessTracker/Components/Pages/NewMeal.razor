@@ -55,7 +55,7 @@
                         <RadzenButton Icon="delete" Shade="Shade.Dark" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => DeleteFood(foodinmeal))" @onclick:stopPropagation="true" Disabled="@IsEditing"/>
                     </Template>
                     <EditTemplate Context="foodinmeal">
-                        <RadzenButton Icon="check" Shade="Shade.Dark" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => ConfirmFood(foodinmeal))" />
+                        <RadzenButton Icon="check" Shade="Shade.Dark" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => ConfirmFood(foodinmeal))" Disabled="@(foodinmeal.FoodId == null || foodinmeal.Amount == 0)"/>
                     </EditTemplate>
                 </RadzenDataGridColumn>
             </Columns>
@@ -99,7 +99,10 @@
     async void DeleteFood(FoodInMeal foodinmeal)
     {
         FoodsInMeal.Remove(foodinmeal);
+        Foods.Add(foodinmeal.Food);
         await FoodsInMealDataGrid.Reload();
+        var newfoodinmeal = new FoodInMeal();
+        await FoodsInMealDataGrid.InsertRow(newfoodinmeal);
     }
 
     async void ConfirmFood(FoodInMeal foodinmeal)
@@ -108,6 +111,7 @@
         foodinmeal.Food = Foods.Find(x => x.FoodId == foodinmeal.FoodId);
         foodinmeal.Meal = Meal;
         FoodsInMeal.Add(foodinmeal);
+        Foods.Remove(foodinmeal.Food);
         await FoodsInMealDataGrid.UpdateRow(foodinmeal);
         await FoodsInMealDataGrid.Reload();
 
