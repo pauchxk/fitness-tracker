@@ -42,22 +42,22 @@
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Property="@nameof(Exercise.Notes)" Title="Notes">
             <EditTemplate Context="exercise">
-                <RadzenNumeric @bind-Value="exercise.Notes" Name="notes"/>
+                <RadzenTextBox @bind-Value="exercise.Notes" Name="notes"/>
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Property="@nameof(Exercise.Goal)" Title="Goal">
             <EditTemplate Context="exercise">
-                <RadzenNumeric @bind-Value="exercise.Goal" Name="goal"/>
+                <RadzenTextBox @bind-Value="exercise.Goal" Name="goal"/>
                 <RadzenRequiredValidator Text="Goal is required" Component="goal" Popup="true"/>
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Property="@nameof(Exercise.ReccommendedRepsSets)" Title="Recommended Sets x Reps">
             <EditTemplate Context="exercise">
-                <RadzenNumeric @bind-Value="exercise.ReccommendedRepsSets" Name="setsreps"/>
+                <RadzenTextBox @bind-Value="exercise.ReccommendedRepsSets" Name="setsreps"/>
                 <RadzenRequiredValidator Text="Sets and Reps are required" Component="setsreps" Popup="true"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Property="prweight" Title="Most Recent PR">
+        @* <RadzenDataGridColumn Property="prweight" Title="Most Recent PR">
             <Template Context="exercise">
                 <RadzenLabel>@exercise.PersonalRecords.Last().Weight</RadzenLabel>
             </Template>
@@ -66,7 +66,7 @@
             <Template Context="exercise">
                 <RadzenLabel>@exercise.PersonalRecords.Last().Date</RadzenLabel>
             </Template>
-        </RadzenDataGridColumn>
+        </RadzenDataGridColumn> *@
         <RadzenDataGridColumn Context="exercise" Title="Editing" TextAlign="TextAlign.Center" Frozen="true" FrozenPosition="FrozenColumnPosition.Right" Width="150px">
             <Template Context="exercise">
                 <RadzenButton Icon="edit" Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => EditExercise(exercise))" @onclick:stopPropagation="true" Disabled="@IsEditing"/>
@@ -95,14 +95,15 @@
         context = DbFactory.CreateDbContext();
         Exercises = await context.Exercises.ToListAsync();
 
+        await ExercisesDataGrid.Reload();
         StateHasChanged();
     }
 
-        public async void AddExercise()
+    public async void AddExercise()
     {
-        Exercise exercise = new Exercise();
+        Exercise newexercise = new Exercise();
         IsEditing = true;
-        await ExercisesDataGrid.InsertRow(exercise);
+        await ExercisesDataGrid.InsertRow(newexercise);
     }
 
     public async void EditExercise(Exercise exercise)
