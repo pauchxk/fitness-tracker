@@ -14,7 +14,7 @@
 [Rr]elease/
 x64/
 [Bb]in/
-[Oo]bj/
+obj/
 **/[Cc]ompiled
 
 # MSTest test Results

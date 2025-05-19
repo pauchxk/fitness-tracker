@@ -1,0 +1,156 @@
+@page "/Exercise-Library"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using FitnessTracker.Models
+@using Radzen
+@using Radzen.Blazor
+@inject IDbContextFactory<FitnessTracker.Models.FitnessTrackerContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Exercise Library</PageTitle>
+<h1>Exercise Library</h1>
+
+<RadzenDataGrid @ref="ExercisesDataGrid" Data="@Exercises" ColumnWidth="125px" TItem="Exercise"
+    Style="height: 100%; width: 75vw" EditMode="DataGridEditMode.Single" >
+    <HeaderTemplate>
+        <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Icon="add_circle" Text="Add Exercise" Click="@AddExercise"/>
+    </HeaderTemplate>
+    <Columns>
+        <RadzenDataGridColumn Property="@nameof(Exercise.ExerciseName)" Title="Name" Frozen="true" FrozenPosition="FrozenColumnPosition.Left">
+            <EditTemplate Context="exercise">
+                <RadzenTextBox @bind-Value="exercise.ExerciseName" Name="exercisename" MaxLength="50"/>
+                <RadzenRequiredValidator Text="Name is required" Component="exercisename" Popup="true"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Property="@nameof(Exercise.ExerciseType)" Title="Type">
+            <EditTemplate Context="exercise">
+                <RadzenTextBox @bind-Value="exercise.ExerciseType" Name="exercisetype" MaxLength="50"/>
+                <RadzenRequiredValidator Text="'Type is required" Component="exercisetype" Popup="true"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Property="@nameof(Exercise.MuscleGroup)" Title="Muscle Group">
+            <EditTemplate Context="exercise">
+                <RadzenTextBox @bind-Value="exercise.MuscleGroup" Name="musclegroup" MaxLength="50"/>
+                <RadzenRequiredValidator Text="Muscle group is required" Component="musclegroup" Popup="true"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Property="@nameof(Exercise.MuscleSubGroup)" Title="Muscle Sub-Group">
+            <EditTemplate Context="exercise">
+                <RadzenTextBox @bind-Value="exercise.MuscleSubGroup" Name="subgroup"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Property="@nameof(Exercise.Notes)" Title="Notes">
+            <EditTemplate Context="exercise">
+                <RadzenTextBox @bind-Value="exercise.Notes" Name="notes"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Property="@nameof(Exercise.Goal)" Title="Goal">
+            <EditTemplate Context="exercise">
+                <RadzenTextBox @bind-Value="exercise.Goal" Name="goal"/>
+                <RadzenRequiredValidator Text="Goal is required" Component="goal" Popup="true"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Property="@nameof(Exercise.ReccommendedRepsSets)" Title="Recommended Sets x Reps">
+            <EditTemplate Context="exercise">
+                <RadzenTextBox @bind-Value="exercise.ReccommendedRepsSets" Name="setsreps"/>
+                <RadzenRequiredValidator Text="Sets and Reps are required" Component="setsreps" Popup="true"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        @* <RadzenDataGridColumn Property="prweight" Title="Most Recent PR">
+            <Template Context="exercise">
+                <RadzenLabel>@exercise.PersonalRecords.Last().Weight</RadzenLabel>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Property="prweight" Title="PR Date">
+            <Template Context="exercise">
+                <RadzenLabel>@exercise.PersonalRecords.Last().Date</RadzenLabel>
+            </Template>
+        </RadzenDataGridColumn> *@
+        <RadzenDataGridColumn Context="exercise" Title="Editing" TextAlign="TextAlign.Center" Frozen="true" FrozenPosition="FrozenColumnPosition.Right" Width="150px">
+            <Template Context="exercise">
+                <RadzenButton Icon="edit" Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => EditExercise(exercise))" @onclick:stopPropagation="true" Disabled="@IsEditing"/>
+                <RadzenButton Icon="delete" Shade="Shade.Dark" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => DeleteExercise(exercise))" @onclick:stopPropagation="true" Disabled="@IsEditing"/>
+            </Template>
+            <EditTemplate Context="exercise">
+                <RadzenButton Icon="check" Shade="Shade.Dark" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => ConfirmEdit(exercise))" />
+                <RadzenButton Icon="close" Shade="Shade.Dark" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => CancelEdit(exercise))" />
+            </EditTemplate>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+
+@code
+{
+    private FitnessTrackerContext context = default!;
+    public required List<Exercise> Exercises = new List<Exercise>();
+    public required RadzenDataGrid<Exercise> ExercisesDataGrid;
+    public required bool IsEditing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        context = DbFactory.CreateDbContext();
+        Exercises = await context.Exercises.ToListAsync();
+
+        await ExercisesDataGrid.Reload();
+        StateHasChanged();
+    }
+
+    public async void AddExercise()
+    {
+        Exercise newexercise = new Exercise();
+        IsEditing = true;
+        await ExercisesDataGrid.InsertRow(newexercise);
+    }
+
+    public async void EditExercise(Exercise exercise)
+    {
+        IsEditing = true;
+        await ExercisesDataGrid.EditRow(exercise);
+    }
+
+    public async void DeleteExercise(Exercise exercise)
+    {
+        Exercises.Remove(exercise);
+        context.Exercises.Remove(exercise);
+        context.SaveChanges();
+        await ExercisesDataGrid.Reload();
+    }
+
+    public async void ConfirmEdit(Exercise exercise)
+    {
+        await ExercisesDataGrid.UpdateRow(exercise);
+        IsEditing = false;
+
+        context.Exercises.Update(exercise);
+        context.SaveChanges();
+
+        if (!Exercises.Contains(exercise))
+        { Exercises.Add(exercise); }
+
+        await ExercisesDataGrid.Reload();
+        StateHasChanged();
+    }
+
+    public void CancelEdit(Exercise exercise)
+    {
+        ExercisesDataGrid.CancelEditRow(exercise);
+        IsEditing = false;
+
+        if (!Exercises.Contains(exercise))
+        { Exercises.Remove(exercise); }
+
+        else
+        {
+            var ExerciseEntry = context.Entry(exercise);
+            if (ExerciseEntry.State == EntityState.Modified)
+            {
+                ExerciseEntry.CurrentValues.SetValues(ExerciseEntry.OriginalValues);
+                ExerciseEntry.State = EntityState.Unchanged;
+            }
+        }
+    }
+}

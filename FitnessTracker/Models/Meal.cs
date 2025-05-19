@@ -23,7 +23,9 @@ public partial class Meal
 
     public int? Fiber { get; set; }
 
-    public virtual ICollection<MealsInLog> MealsInLogs { get; set; } = new List<MealsInLog>();
+    public string Type { get; set; } = null!;
 
-    public virtual ICollection<Food> Foods { get; set; } = new List<Food>();
+    public virtual ICollection<DailyFood> DailyFoods { get; set; } = new List<DailyFood>();
+
+    public virtual ICollection<FoodInMeal> FoodInMeals { get; set; } = new List<FoodInMeal>();
 }
