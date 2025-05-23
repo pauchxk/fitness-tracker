@@ -11,12 +11,49 @@
 <PageTitle>Dashboard</PageTitle>
 <h1>Dashboard</h1>
 
-<RadzenStack Orientation="Orientation.Vertical" Style="height: 90%" class="rz-p-sm-1">
-    <RadzenPanel AllowCollapse="false" class="rz-p-sm-1" Style="width: 100%">
+<RadzenStack Orientation="Orientation.Vertical" Style="height: 90%" class="rz-p-sm-1" Gap="0.5rem">
+
+    <RadzenPanel AllowCollapse="false" class="rz-my-1 rz-mx-auto" Style="width: 100%">
         <HeaderTemplate>
             <RadzenText TextStyle="TextStyle.H5" class="rz-display-flex rz-align-items-center rz-m-0">
                 <RadzenIcon Icon="data_usage" class="rz-me-1"/><b>Daily Stats</b>
             </RadzenText>
         </HeaderTemplate>
+        <ChildContent>
+            <RadzenCard Variant="Variant.Outlined" class="rz-mt-4">
+                <RadzenLabel>Today's date, current weight, calorie + protein progress percentage, workout completed, stretches completed, mood</RadzenLabel>
+            </RadzenCard>
+        </ChildContent>
     </RadzenPanel>
+
+    <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
+
+        <RadzenPanel AllowCollapse="false" class="rz-my-1 rz-mx-auto" Style="width: 100%">
+            <HeaderTemplate>
+                <RadzenText TextStyle="TextStyle.H5" class="rz-display-flex rz-align-items-center rz-m-0">
+                    <RadzenIcon Icon="data_usage" class="rz-me-1"/><b>Workout</b>
+                </RadzenText>
+            </HeaderTemplate>
+            <ChildContent>
+                <RadzenCard Variant="Variant.Outlined" class="rz-mt-4">
+                    <RadzenLabel>Workout name, length, exercises done, PRs if any, notes</RadzenLabel>
+                </RadzenCard>
+            </ChildContent>
+        </RadzenPanel>
+
+        <RadzenPanel AllowCollapse="false" class="rz-my-1 rz-mx-auto" Style="width: 100%">
+            <HeaderTemplate>
+                <RadzenText TextStyle="TextStyle.H5" class="rz-display-flex rz-align-items-center rz-m-0">
+                    <RadzenIcon Icon="data_usage" class="rz-me-1"/><b>Nutrition</b>
+                </RadzenText>
+            </HeaderTemplate>
+            <ChildContent>
+                <RadzenCard Variant="Variant.Outlined" class="rz-mt-4">
+                    <RadzenLabel>Macro progress against goals, meals eaten separated by type (breakfast etc.) and notes</RadzenLabel>
+                </RadzenCard>
+            </ChildContent>
+        </RadzenPanel>
+
+    </RadzenStack>
+
 </RadzenStack>
