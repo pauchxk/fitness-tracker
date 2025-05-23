@@ -1,7 +1,22 @@
 ﻿@page "/"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using FitnessTracker.Models
+@using Radzen
+@using Radzen.Blazor
+@inject IDbContextFactory<FitnessTracker.Models.FitnessTrackerContext> DbFactory
+@inject NavigationManager NavigationManager
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Dashboard</PageTitle>
+<h1>Dashboard</h1>
 
-<h1>Hello, world!</h1>
-
-Welcome to your new app.
+<RadzenStack Orientation="Orientation.Vertical" Style="height: 90%" class="rz-p-sm-1">
+    <RadzenPanel AllowCollapse="false" class="rz-p-sm-1" Style="width: 100%">
+        <HeaderTemplate>
+            <RadzenText TextStyle="TextStyle.H5" class="rz-display-flex rz-align-items-center rz-m-0">
+                <RadzenIcon Icon="data_usage" class="rz-me-1"/><b>Daily Stats</b>
+            </RadzenText>
+        </HeaderTemplate>
+    </RadzenPanel>
+</RadzenStack>

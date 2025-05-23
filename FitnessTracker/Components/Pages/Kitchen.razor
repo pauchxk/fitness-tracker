@@ -11,12 +11,12 @@
 <PageTitle>Kitchen</PageTitle>
 <h1>Kitchen</h1>
 
-<RadzenTabs TabPosition="TabPosition.Top" RenderMode="TabRenderMode.Client">
+<RadzenTabs TabPosition="TabPosition.Top" RenderMode="TabRenderMode.Client" Style="height: 90%" class="rz-p-sm-1">
     <Tabs>
 
-        <RadzenTabsItem Text="Ingredients">
+        <RadzenTabsItem Text="Ingredients" Style="height: 100%">
             <RadzenDataGrid @ref="FoodsDataGrid" Data="@Foods" ColumnWidth="125px" TItem="Food"
-                Style="height: 100%; width: 75vw" EditMode="DataGridEditMode.Single" >
+                Style="height: 100%; width: 100%" EditMode="DataGridEditMode.Single" >
                 <HeaderTemplate>
                     <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Icon="add_circle" Text="Add Food" Click="@AddFood"/>
                 </HeaderTemplate>
@@ -93,7 +93,7 @@
 
         <RadzenTabsItem Text="Meals">
             <RadzenDataGrid @ref="@MealsDataGrid" Data="@Meals" ColumnWidth="125px" TItem="Meal"
-                    Style="height: 100%; width: 75vw">
+                    Style="height: 100%; width: 100%">
                 <HeaderTemplate>
                     <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Icon="add_circle" Text="New Meal" Click="@AddMeal"/>
                 </HeaderTemplate>
