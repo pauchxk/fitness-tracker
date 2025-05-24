@@ -17,7 +17,7 @@ public partial class DailyLog
 
     public int? Steps { get; set; }
 
-    public virtual ICollection<DailyFood> DailyFoods { get; set; } = new List<DailyFood>();
+    public virtual ICollection<DailyNutrition> DailyNutritions { get; set; } = new List<DailyNutrition>();
 
     public virtual ICollection<DailyWorkout> DailyWorkouts { get; set; } = new List<DailyWorkout>();
 }
