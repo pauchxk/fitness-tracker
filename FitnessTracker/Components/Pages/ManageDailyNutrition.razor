@@ -1,0 +1,89 @@
+@page "/Manage-Daily-Nutrition"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using FitnessTracker.Models
+@using Radzen
+@using Radzen.Blazor
+@inject IDbContextFactory<FitnessTracker.Models.FitnessTrackerContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Daily Nutrition</PageTitle>
+<h1>Daily Nutrition</h1>
+
+<RadzenStack Orientation="Orientation.Vertical" Style="height: 100%" class="rz-p-sm-1">
+
+    <RadzenCard Variant="Variant.Outlined" Style="height: 200px; width: 100%">
+        <RadzenStack Orientation="Orientation.Horizontal" Style="height: 100%; width: 100%" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Gap="1rem">
+            <RadzenRadialGauge Style="width: 100%; height: 100%">
+                <RadzenRadialGaugeScale StartAngle="-150" EndAngle="150" Min="0" Max="@CaloriesGoal" ShowTickLabels="false" TickPosition="GaugeTickPosition.None">
+                    <RadzenRadialGaugeScalePointer Value="@Calories" Length="0.6" ShowValue="true">
+                        <Template Context="pointer">
+                            <RadzenStack AlignItems="AlignItems.Center" Gap="0" class="rz-mt-4">
+                                <RadzenText TextStyle="TextStyle.H5" class="rz-m-0"><strong>@pointer.Value</strong></RadzenText>
+                                <RadzenText TextStyle="TextStyle.Caption">Calories (kcal)</RadzenText>
+                            </RadzenStack>
+                        </Template>
+                    </RadzenRadialGaugeScalePointer>
+                    <RadzenRadialGaugeScaleRange From="2000" To="@CaloriesGoal" Fill="green" />
+                    <RadzenRadialGaugeScaleRange From="1000" To="2000" Fill="orange" />
+                    <RadzenRadialGaugeScaleRange From="0" To="1000" Fill="red" />
+                </RadzenRadialGaugeScale>
+            </RadzenRadialGauge> 
+            <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="height: 100%; width: 100%">
+                <RadzenCard Variant="Variant.Outlined">
+                    <RadzenText>Fats: @Fat/@(FatGoal)g</RadzenText>
+                    <RadzenText>Carbohydrates: @Carbohydrate/@(CarbohydrateGoal)g</RadzenText>
+                    <RadzenText>Fiber: @Fiber/@(FiberGoal)g</RadzenText>
+                </RadzenCard>
+            </RadzenStack>
+            <RadzenRadialGauge Style="width: 100%; height: 100%">
+                <RadzenRadialGaugeScale StartAngle="-150" EndAngle="150" Min="0" Max="@ProteinGoal" ShowTickLabels="false" TickPosition="GaugeTickPosition.None">
+                    <RadzenRadialGaugeScalePointer Value="@Protein" Length="0.6" ShowValue="true">
+                        <Template Context="pointer">
+                            <RadzenStack AlignItems="AlignItems.Center" Gap="0" class="rz-mt-4">
+                                <RadzenText TextStyle="TextStyle.H5" class="rz-m-0"><strong>@pointer.Value</strong></RadzenText>
+                                <RadzenText TextStyle="TextStyle.Caption">Protein (g)</RadzenText>
+                            </RadzenStack>
+                        </Template>
+                    </RadzenRadialGaugeScalePointer>
+                    <RadzenRadialGaugeScaleRange From="120" To="@ProteinGoal" Fill="green" />
+                    <RadzenRadialGaugeScaleRange From="50" To="120" Fill="orange" />
+                    <RadzenRadialGaugeScaleRange From="0" To="50" Fill="red" />
+                </RadzenRadialGaugeScale>
+            </RadzenRadialGauge> 
+        </RadzenStack>
+    </RadzenCard>
+
+</RadzenStack>
+
+@code
+{
+    private FitnessTrackerContext context = default!;
+    public required List<Goal> Goals = new List<Goal>();
+    public required int CaloriesGoal { get; set; }
+    public required int ProteinGoal { get; set; }
+    public required int FatGoal { get; set; }
+    public required int CarbohydrateGoal { get; set; }
+    public required int FiberGoal { get; set; }
+    
+    public required int Calories = 300;
+    public required int Protein = 50;
+    public required int Fat = 0;
+    public required int Carbohydrate = 0;
+    public required int Fiber = 0;
+    protected async override void OnInitialized()
+    {
+        await base.OnInitializedAsync();
+
+        context = DbFactory.CreateDbContext();
+
+        Goals = await context.Goals.ToListAsync();
+
+        CaloriesGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Calories").TargetValue);
+        ProteinGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Protein").TargetValue);
+        FatGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Fat").TargetValue);
+        CarbohydrateGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Carbohydrate").TargetValue);
+        FiberGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Fiber").TargetValue);
+    }
+}
