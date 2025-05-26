@@ -64,6 +64,19 @@
 
 @code
 {
+    private FitnessTrackerContext context = default!;
+    public required DailyLog Today = new DailyLog();
+    public required DateOnly datetoday = DateOnly.FromDateTime(DateTime.Today);
+
+    protected override async void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+        
+        Today = await context.DailyLogs.LastAsync();
+        if (datetoday != Today.LogDate)
+        { Today = new DailyLog(); }
+    }
+
     public void ManageNutrition()
     { NavigationManager.NavigateTo("Daily-Nutrition"); }
 }

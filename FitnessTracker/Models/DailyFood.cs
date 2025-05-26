@@ -13,6 +13,8 @@ public partial class DailyFood
 
     public int? MealId { get; set; }
 
+    public string? MealType { get; set; }
+
     public virtual ICollection<DailyNutrition> DailyNutritions { get; set; } = new List<DailyNutrition>();
 
     public virtual Food? Food { get; set; }

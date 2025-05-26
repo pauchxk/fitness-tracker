@@ -64,7 +64,20 @@
         <RadzenCard Variant="Variant.Outlined" Style="height: 300px; width: 50%">
             <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%">
                 <h3>Breakfast</h3>
-
+                <RadzenCard Variant="Variant.Filled" Style="height: 100%; width: 100%">
+                    @foreach (var food in BreakfastFoods)
+                    {
+                        @if (food.Food != null)
+                        {
+                            <RadzenText TextStyle="TextStyle.Body1">@(food.Food.FoodName) (@(food.Amount)g)</RadzenText>
+                        }
+                        
+                        @if (food.Meal != null)
+                        {
+                            <RadzenText TextStyle="TextStyle.Body1">@food.Meal.MealName</RadzenText>
+                        }
+                    }
+                </RadzenCard>
             </RadzenStack>
         </RadzenCard>
         <RadzenCard Variant="Variant.Outlined" Style="height: 300px; width: 50%">
@@ -95,6 +108,9 @@
 @code
 {
     private FitnessTrackerContext context = default!;
+    public required DailyLog Today = new DailyLog();
+    public required DateOnly datetoday = DateOnly.FromDateTime(DateTime.Today);
+
     public required List<Goal> Goals = new List<Goal>();
     public required int CaloriesGoal = 0;
     public required int ProteinGoal = 0;
@@ -107,11 +123,17 @@
     public required int Fat = 0;
     public required int Carbohydrate = 0;
     public required int Fiber = 0;
+
+    public required List<DailyFood> BreakfastFoods = new List<DailyFood>();
     protected override async void OnInitialized()
     {
         context = DbFactory.CreateDbContext();
 
+        Today = await context.DailyLogs.LastAsync();
+        if (datetoday != Today.LogDate)
+        { Today = new DailyLog(); }
         Goals = await context.Goals.ToListAsync();
+        BreakfastFoods = await context.DailyFoods.Where(x => x.MealType == "Breakfast" && x.DailyNutritions.First().LogId == Today.LogId).ToListAsync();
 
         CaloriesGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Calories").TargetValue);
         ProteinGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Protein").TargetValue);

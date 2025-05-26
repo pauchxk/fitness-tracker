@@ -57,6 +57,9 @@ public partial class FitnessTrackerContext : DbContext
             entity.Property(e => e.Amount).HasColumnType("decimal(2, 0)");
             entity.Property(e => e.FoodId).HasColumnName("Food_ID");
             entity.Property(e => e.MealId).HasColumnName("Meal_ID");
+            entity.Property(e => e.MealType)
+                .HasMaxLength(100)
+                .HasColumnName("Meal_Type");
 
             entity.HasOne(d => d.Food).WithMany(p => p.DailyFoods)
                 .HasForeignKey(d => d.FoodId)
