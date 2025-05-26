@@ -43,9 +43,12 @@
 
         <RadzenPanel AllowCollapse="false" class="rz-my-1 rz-mx-auto" Style="width: 100%">
             <HeaderTemplate>
-                <RadzenText TextStyle="TextStyle.H5" class="rz-display-flex rz-align-items-center rz-m-0">
-                    <RadzenIcon Icon="data_usage" class="rz-me-1"/><b>Nutrition</b>
-                </RadzenText>
+                <RadzenStack Orientation="Orientation.Horizontal">
+                    <RadzenText TextStyle="TextStyle.H5" class="rz-display-flex rz-align-items-center rz-m-0">
+                        <RadzenIcon Icon="data_usage" class="rz-me-1"/><b>Nutrition</b>
+                    </RadzenText>
+                    <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Icon="add_circle" Text="Manage Nutrition" Click="@ManageNutrition"/>
+                </RadzenStack>
             </HeaderTemplate>
             <ChildContent>
                 <RadzenCard Variant="Variant.Outlined" class="rz-mt-4">
@@ -57,3 +60,9 @@
     </RadzenStack>
 
 </RadzenStack>
+
+@code
+{
+    public void ManageNutrition()
+    { NavigationManager.NavigateTo("Daily-Nutrition"); }
+}
