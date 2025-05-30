@@ -1,0 +1,74 @@
+@page "/Daily-Meal-Form"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using FitnessTracker.Models
+@using Radzen
+@using Radzen.Blazor
+@inject IDbContextFactory<FitnessTracker.Models.FitnessTrackerContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Daily Meal</PageTitle>
+<h1>Daily Meal</h1>
+
+<RadzenStack Orientation="Orientation.Vertical" Style="height: 100%; width: 100%" class="rz-p-sm-1">
+
+    <RadzenStack Orientation="Orientation.Horizontal" class="rz-p-sm-1">
+        <RadzenLabel>Food</RadzenLabel>
+        <RadzenSwitch @bind-Value="@FoodMeal"/>
+        <RadzenLabel>Meal</RadzenLabel>
+    </RadzenStack>
+
+    @if (!FoodMeal)
+    {
+        <RadzenStack Orientation="Orientation.Horizontal">
+            <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Text="Select Food" Click="@SelectFood" Disabled="@(SelectedFood.FoodGroup != null || SelectedFood.FoodName == null)"/>
+            <RadzenDropDown Data="@Foods" TValue="string" Placeholder="Select Food" @bind-Value="@SelectedFood.FoodName" TextProperty="@nameof(Food.FoodName)" ValueProperty="@nameof(Food.FoodName)" Disabled="@(SelectedFood.FoodGroup != null)"/>
+            <RadzenNumeric Name="Amount" @bind-Value="@DailyFood.Amount" Placeholder="Amount (g)" TValue="decimal"/>
+        </RadzenStack>
+
+        //These fields won't update, need to swap to something else - datagrid maybe?
+        <RadzenCard Variant="Variant.Outlined" Visible="@(SelectedFood.FoodGroup != null)">
+            <RadzenText TextStyle="TextStyle.Body1">Name:           @SelectedFood.FoodName</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1">Food Group:     @(SelectedFood.FoodGroup)</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1">Food Sub-Group: @(SelectedFood.FoodSubGroup)</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1">Notes:          @(SelectedFood.Notes)</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1">Amount:         @(DailyFood.Amount)g</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1">Calories:       @(SelectedFood.Calories / 100 * DailyFood.Amount)kcal</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1">Protein:        @(SelectedFood.Protein / 100 * DailyFood.Amount)g</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1">Fat:            @(SelectedFood.Fat / 100 * DailyFood.Amount)g</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1">Carbohydrates:  @(SelectedFood.Carbohydrates / 100 * DailyFood.Amount)g</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1">Fiber:          @(SelectedFood.Fiber / 100 * DailyFood.Amount)g</RadzenText>
+        </RadzenCard>
+    }
+
+</RadzenStack>
+
+@code
+{
+    private FitnessTrackerContext context = default!;
+    public bool FoodMeal = false;
+    public List<Food> Foods = new List<Food>();
+    public Food SelectedFood = new Food();
+
+    public DailyFood DailyFood = new DailyFood();
+
+    protected override async Task OnInitializedAsync()
+    {
+        context = DbFactory.CreateDbContext();
+
+        Foods = await context.Foods.ToListAsync();
+
+        DailyFood.Amount = 100;
+    }
+
+    void SelectFood()
+    {
+        if (SelectedFood.FoodName == null)
+        { return; }
+
+        SelectedFood = Foods.Find(x => x.FoodName == SelectedFood.FoodName);
+
+        StateHasChanged();
+    }
+}

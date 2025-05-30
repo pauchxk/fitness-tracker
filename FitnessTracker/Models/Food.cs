@@ -21,11 +21,11 @@ public partial class Food
 
     public int Protein { get; set; }
 
-    public int? Fat { get; set; }
+    public int Fat { get; set; }
 
-    public int? Carbohydrates { get; set; }
+    public int Carbohydrates { get; set; }
 
-    public int? Fiber { get; set; }
+    public int Fiber { get; set; }
 
     public virtual ICollection<DailyFood> DailyFoods { get; set; } = new List<DailyFood>();
 

@@ -17,11 +17,11 @@ public partial class Meal
 
     public int Protein { get; set; }
 
-    public int? Fat { get; set; }
+    public int Fat { get; set; }
 
-    public int? Carbohydrates { get; set; }
+    public int Carbohydrates { get; set; }
 
-    public int? Fiber { get; set; }
+    public int Fiber { get; set; }
 
     public string Type { get; set; } = null!;
 

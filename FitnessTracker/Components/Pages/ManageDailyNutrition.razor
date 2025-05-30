@@ -64,7 +64,7 @@
         <RadzenCard Variant="Variant.Outlined" Style="height: 300px; width: 50%">
             <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%">
                 <h3>Breakfast</h3>
-                <RadzenCard Variant="Variant.Filled" Style="height: 100%; width: 100%">
+                <RadzenCard Variant="Variant.Flat" Style="height: 100%; width: 100%">
                     @foreach (var food in BreakfastFoods)
                     {
                         @if (food.Food != null)
@@ -129,9 +129,13 @@
     {
         context = DbFactory.CreateDbContext();
 
-        Today = await context.DailyLogs.LastAsync();
-        if (datetoday != Today.LogDate)
+        try
+        { Today = await context.DailyLogs.OrderByDescending(x => x.LogDate).LastAsync(); }
+        catch { }
+
+        if (Today == null || datetoday != Today.LogDate)
         { Today = new DailyLog(); }
+        
         Goals = await context.Goals.ToListAsync();
         BreakfastFoods = await context.DailyFoods.Where(x => x.MealType == "Breakfast" && x.DailyNutritions.First().LogId == Today.LogId).ToListAsync();
 

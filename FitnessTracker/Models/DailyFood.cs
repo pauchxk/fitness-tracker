@@ -5,7 +5,7 @@ namespace FitnessTracker.Models;
 
 public partial class DailyFood
 {
-    public decimal? Amount { get; set; }
+    public decimal Amount { get; set; }
 
     public int DfoodId { get; set; }
 
@@ -13,7 +13,7 @@ public partial class DailyFood
 
     public int? MealId { get; set; }
 
-    public string? MealType { get; set; }
+    public string MealType { get; set; } = null!;
 
     public virtual ICollection<DailyNutrition> DailyNutritions { get; set; } = new List<DailyNutrition>();
 
