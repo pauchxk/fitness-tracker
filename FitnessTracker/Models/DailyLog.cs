@@ -9,7 +9,7 @@ public partial class DailyLog
 
     public DateOnly LogDate { get; set; }
 
-    public decimal Weight { get; set; }
+    public decimal? Weight { get; set; }
 
     public int? CaffeineIntake { get; set; }
 
@@ -17,7 +17,7 @@ public partial class DailyLog
 
     public int? Steps { get; set; }
 
-    public virtual ICollection<DailyNutrition> DailyNutritions { get; set; } = new List<DailyNutrition>();
+    public virtual DailyNutrition? DailyNutrition { get; set; }
 
     public virtual ICollection<DailyWorkout> DailyWorkouts { get; set; } = new List<DailyWorkout>();
 }

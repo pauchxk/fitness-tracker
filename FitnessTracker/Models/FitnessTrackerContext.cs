@@ -54,8 +54,8 @@ public partial class FitnessTrackerContext : DbContext
             entity.ToTable("Daily_Foods");
 
             entity.Property(e => e.DfoodId).HasColumnName("DFood_ID");
-            entity.Property(e => e.Amount).HasColumnType("decimal(2, 0)");
             entity.Property(e => e.FoodId).HasColumnName("Food_ID");
+            entity.Property(e => e.LogId).HasColumnName("Log_ID");
             entity.Property(e => e.MealId).HasColumnName("Meal_ID");
             entity.Property(e => e.MealType)
                 .HasMaxLength(100)
@@ -64,6 +64,10 @@ public partial class FitnessTrackerContext : DbContext
             entity.HasOne(d => d.Food).WithMany(p => p.DailyFoods)
                 .HasForeignKey(d => d.FoodId)
                 .HasConstraintName("Daily_Foods_Foods_FK");
+
+            entity.HasOne(d => d.Log).WithMany(p => p.DailyFoods)
+                .HasForeignKey(d => d.LogId)
+                .HasConstraintName("Daily_Foods_Daily_Nutrition_FK");
 
             entity.HasOne(d => d.Meal).WithMany(p => p.DailyFoods)
                 .HasForeignKey(d => d.MealId)
@@ -87,20 +91,16 @@ public partial class FitnessTrackerContext : DbContext
 
         modelBuilder.Entity<DailyNutrition>(entity =>
         {
-            entity.HasKey(e => new { e.LogId, e.DfoodId }).HasName("Daily_Nutrition_PK");
+            entity.HasKey(e => e.LogId).HasName("Daily_Nutrition_PK");
 
             entity.ToTable("Daily_Nutrition");
 
-            entity.Property(e => e.LogId).HasColumnName("Log_ID");
-            entity.Property(e => e.DfoodId).HasColumnName("DFood_ID");
+            entity.Property(e => e.LogId)
+                .ValueGeneratedNever()
+                .HasColumnName("Log_ID");
 
-            entity.HasOne(d => d.Dfood).WithMany(p => p.DailyNutritions)
-                .HasForeignKey(d => d.DfoodId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("Daily_Nutrition_Daily_Foods_FK");
-
-            entity.HasOne(d => d.Log).WithMany(p => p.DailyNutritions)
-                .HasForeignKey(d => d.LogId)
+            entity.HasOne(d => d.Log).WithOne(p => p.DailyNutrition)
+                .HasForeignKey<DailyNutrition>(d => d.LogId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("Log_ID2");
         });

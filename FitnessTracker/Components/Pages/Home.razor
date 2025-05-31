@@ -66,6 +66,7 @@
 {
     private FitnessTrackerContext context = default!;
     public required DailyLog Today = new DailyLog();
+    public DailyNutrition DailyNutrition = new DailyNutrition();
     public required DateOnly datetoday = DateOnly.FromDateTime(DateTime.Today);
 
     protected override async void OnInitialized()
@@ -75,9 +76,22 @@
         try
         { Today = await context.DailyLogs.OrderByDescending(x => x.LogDate).LastAsync(); }
         catch { }
-
         if (Today == null || datetoday != Today.LogDate)
-        { Today = new DailyLog(); }
+        { 
+            Today = new DailyLog();
+            Today.LogDate = datetoday;
+            await context.DailyLogs.AddAsync(Today);
+            await context.SaveChangesAsync();
+        }
+
+        DailyNutrition = await context.DailyNutritions.FirstOrDefaultAsync(x => x.LogId == Today.LogId);
+        if (DailyNutrition.LogId == null)
+        { 
+            DailyNutrition = new DailyNutrition();
+            DailyNutrition.LogId = Today.LogId;
+            await context.DailyNutritions.AddAsync(DailyNutrition);
+            await context.SaveChangesAsync();
+        }
     }
 
     public void ManageNutrition()

@@ -22,7 +22,7 @@
         <RadzenStack Orientation="Orientation.Horizontal" Style="height: 80%; width: 100%" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Gap="1rem">
             <RadzenRadialGauge Style="width: 100%; height: 100%">
                 <RadzenRadialGaugeScale StartAngle="-150" EndAngle="150" Min="0" Max="@CaloriesGoal" ShowTickLabels="false" TickPosition="GaugeTickPosition.None">
-                    <RadzenRadialGaugeScalePointer Value="@Calories" Length="0.6" ShowValue="true">
+                    <RadzenRadialGaugeScalePointer Value="@DailyNutrition.Calories" Length="0.6" ShowValue="true">
                         <Template Context="pointer">
                             <RadzenStack AlignItems="AlignItems.Center" Gap="0" class="rz-mt-4">
                                 <RadzenText TextStyle="TextStyle.H5" class="rz-m-0"><strong>@pointer.Value</strong></RadzenText>
@@ -37,14 +37,15 @@
             </RadzenRadialGauge> 
             <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="height: 100%; width: 100%">
                 <RadzenCard Variant="Variant.Outlined">
-                    <RadzenText>Fats: @Fat/@(FatGoal)g</RadzenText>
-                    <RadzenText>Carbohydrates: @Carbohydrate/@(CarbohydrateGoal)g</RadzenText>
-                    <RadzenText>Fiber: @Fiber/@(FiberGoal)g</RadzenText>
+                    <RadzenText>Fats: @DailyNutrition.Fat/@(FatGoal)g</RadzenText>
+                    <RadzenText>Carbohydrates: @DailyNutrition.Carbohydrates/@(CarbohydrateGoal)g</RadzenText>
+                    <RadzenText>Fiber: @DailyNutrition.Fiber/@(FiberGoal)g</RadzenText>
                 </RadzenCard>
+                <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Text="Add Food / Meal" Click="@(args => NavigationManager.NavigateTo("Daily-Meal-Form"))"/>
             </RadzenStack>
             <RadzenRadialGauge Style="width: 100%; height: 100%">
                 <RadzenRadialGaugeScale StartAngle="-150" EndAngle="150" Min="0" Max="@ProteinGoal" ShowTickLabels="false" TickPosition="GaugeTickPosition.None">
-                    <RadzenRadialGaugeScalePointer Value="@Protein" Length="0.6" ShowValue="true">
+                    <RadzenRadialGaugeScalePointer Value="@DailyNutrition.Protein" Length="0.6" ShowValue="true">
                         <Template Context="pointer">
                             <RadzenStack AlignItems="AlignItems.Center" Gap="0" class="rz-mt-4">
                                 <RadzenText TextStyle="TextStyle.H5" class="rz-m-0"><strong>@pointer.Value</strong></RadzenText>
@@ -109,20 +110,14 @@
 {
     private FitnessTrackerContext context = default!;
     public required DailyLog Today = new DailyLog();
+    public required DailyNutrition DailyNutrition = new DailyNutrition();
     public required DateOnly datetoday = DateOnly.FromDateTime(DateTime.Today);
-
     public required List<Goal> Goals = new List<Goal>();
     public required int CaloriesGoal = 0;
     public required int ProteinGoal = 0;
     public required int FatGoal = 0;
     public required int CarbohydrateGoal = 0;
     public required int FiberGoal = 0;
-    
-    public required int Calories = 0;
-    public required int Protein = 0;
-    public required int Fat = 0;
-    public required int Carbohydrate = 0;
-    public required int Fiber = 0;
 
     public required List<DailyFood> BreakfastFoods = new List<DailyFood>();
     protected override async void OnInitialized()
@@ -132,12 +127,25 @@
         try
         { Today = await context.DailyLogs.OrderByDescending(x => x.LogDate).LastAsync(); }
         catch { }
-
         if (Today == null || datetoday != Today.LogDate)
-        { Today = new DailyLog(); }
+        { 
+            Today = new DailyLog();
+            Today.LogDate = datetoday;
+            await context.DailyLogs.AddAsync(Today);
+            await context.SaveChangesAsync();
+        }
+
+        DailyNutrition = await context.DailyNutritions.FirstOrDefaultAsync(x => x.LogId == Today.LogId);
+        if (DailyNutrition.LogId == null)
+        { 
+            DailyNutrition = new DailyNutrition();
+            DailyNutrition.LogId = Today.LogId;
+            await context.DailyNutritions.AddAsync(DailyNutrition);
+            await context.SaveChangesAsync();
+        }
         
         Goals = await context.Goals.ToListAsync();
-        BreakfastFoods = await context.DailyFoods.Where(x => x.MealType == "Breakfast" && x.DailyNutritions.First().LogId == Today.LogId).ToListAsync();
+        BreakfastFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Breakfast").ToListAsync();;
 
         CaloriesGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Calories").TargetValue);
         ProteinGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Protein").TargetValue);

@@ -7,8 +7,6 @@ public partial class DailyNutrition
 {
     public int LogId { get; set; }
 
-    public int DfoodId { get; set; }
-
     public int Calories { get; set; }
 
     public int Protein { get; set; }
@@ -19,7 +17,7 @@ public partial class DailyNutrition
 
     public int Fiber { get; set; }
 
-    public virtual DailyFood Dfood { get; set; } = null!;
+    public virtual ICollection<DailyFood> DailyFoods { get; set; } = new List<DailyFood>();
 
     public virtual DailyLog Log { get; set; } = null!;
 }
