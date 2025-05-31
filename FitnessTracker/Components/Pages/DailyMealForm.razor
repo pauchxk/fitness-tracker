@@ -7,38 +7,47 @@
 @using Radzen.Blazor
 @inject IDbContextFactory<FitnessTracker.Models.FitnessTrackerContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject DialogService DialogService
 
 <PageTitle>Daily Meal</PageTitle>
 <h1>Daily Meal</h1>
 
-<RadzenStack Orientation="Orientation.Vertical" Style="height: 100%; width: 100%" class="rz-p-sm-1">
+<RadzenStack Orientation="Orientation.Vertical" Style="height: 100%; width: 100%" class="rz-p-sm-1" AlignItems="AlignItems.Center">
 
-    <RadzenStack Orientation="Orientation.Horizontal" class="rz-p-sm-1">
-        <RadzenLabel>Food</RadzenLabel>
-        <RadzenSwitch @bind-Value="@FoodMeal"/>
-        <RadzenLabel>Meal</RadzenLabel>
-    </RadzenStack>
+    <RadzenCard Variant="Variant.Outlined" Style="height: fit-content; width: fit-content">
+        <RadzenStack Orientation="Orientation.Horizontal" class="rz-p-sm-1" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
+            <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Danger" Text="Reset" Click="@Reset"/>
+            <RadzenLabel>Food</RadzenLabel>
+            <RadzenSwitch @bind-Value="@FoodMeal"/>
+            <RadzenLabel>Meal</RadzenLabel>
+        </RadzenStack>
+    </RadzenCard>
 
     @if (!FoodMeal)
     {
-        <RadzenStack Orientation="Orientation.Horizontal">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
             <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Text="Select Food" Click="@SelectFood" Disabled="@(SelectedFood.FoodGroup != null || SelectedFood.FoodName == null)"/>
             <RadzenDropDown Data="@Foods" TValue="string" Placeholder="Select Food" @bind-Value="@SelectedFood.FoodName" TextProperty="@nameof(Food.FoodName)" ValueProperty="@nameof(Food.FoodName)" Disabled="@(SelectedFood.FoodGroup != null)"/>
-            <RadzenNumeric Name="Amount" @bind-Value="@DailyFood.Amount" Placeholder="Amount (g)" TValue="decimal"/>
+            <RadzenNumeric Name="Amount" @bind-Value="@DailyFood.Amount" Placeholder="Amount (g)" TValue="decimal" Format="Amount: ###g"/>
         </RadzenStack>
 
-        //These fields won't update, need to swap to something else - datagrid maybe?
         <RadzenCard Variant="Variant.Outlined" Visible="@(SelectedFood.FoodGroup != null)">
-            <RadzenText TextStyle="TextStyle.Body1">Name:           @SelectedFood.FoodName</RadzenText>
-            <RadzenText TextStyle="TextStyle.Body1">Food Group:     @(SelectedFood.FoodGroup)</RadzenText>
-            <RadzenText TextStyle="TextStyle.Body1">Food Sub-Group: @(SelectedFood.FoodSubGroup)</RadzenText>
-            <RadzenText TextStyle="TextStyle.Body1">Notes:          @(SelectedFood.Notes)</RadzenText>
-            <RadzenText TextStyle="TextStyle.Body1">Amount:         @(DailyFood.Amount)g</RadzenText>
-            <RadzenText TextStyle="TextStyle.Body1">Calories:       @(SelectedFood.Calories / 100 * DailyFood.Amount)kcal</RadzenText>
-            <RadzenText TextStyle="TextStyle.Body1">Protein:        @(SelectedFood.Protein / 100 * DailyFood.Amount)g</RadzenText>
-            <RadzenText TextStyle="TextStyle.Body1">Fat:            @(SelectedFood.Fat / 100 * DailyFood.Amount)g</RadzenText>
-            <RadzenText TextStyle="TextStyle.Body1">Carbohydrates:  @(SelectedFood.Carbohydrates / 100 * DailyFood.Amount)g</RadzenText>
-            <RadzenText TextStyle="TextStyle.Body1">Fiber:          @(SelectedFood.Fiber / 100 * DailyFood.Amount)g</RadzenText>
+            <RadzenStack Orientation="Orientation.Horizontal" Style="height: 100%; width: 100%" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
+                <RadzenColumn>
+                    <RadzenText TextStyle="TextStyle.Body1">Name:           @SelectedFood.FoodName</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1">Food Group:     @(SelectedFood.FoodGroup)</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1">Food Sub-Group: @(SelectedFood.FoodSubGroup)</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1">Notes:          @(SelectedFood.Notes)</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1">Amount:         @(DailyFood.Amount)g</RadzenText>
+                </RadzenColumn>
+                <RadzenColumn>
+                    <RadzenText TextStyle="TextStyle.Body1">Calories:       @(Convert.ToDecimal(SelectedFood.Calories) / 100 * DailyFood.Amount)kcal</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1">Protein:        @(Convert.ToDecimal(SelectedFood.Protein) / 100 * DailyFood.Amount)g</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1">Fat:            @(Convert.ToDecimal(SelectedFood.Fat) / 100 * DailyFood.Amount)g</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1">Carbohydrates:  @(Convert.ToDecimal(SelectedFood.Carbohydrates) / 100 * DailyFood.Amount)g</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1">Fiber:          @(Convert.ToDecimal(SelectedFood.Fiber) / 100 * DailyFood.Amount)g</RadzenText>
+                </RadzenColumn>
+            </RadzenStack>
         </RadzenCard>
     }
 
@@ -50,16 +59,17 @@
     public bool FoodMeal = false;
     public List<Food> Foods = new List<Food>();
     public Food SelectedFood = new Food();
-
     public DailyFood DailyFood = new DailyFood();
+    public required string MealType { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         context = DbFactory.CreateDbContext();
 
         Foods = await context.Foods.ToListAsync();
-
         DailyFood.Amount = 100;
+
+        StateHasChanged();
     }
 
     void SelectFood()
@@ -68,7 +78,22 @@
         { return; }
 
         SelectedFood = Foods.Find(x => x.FoodName == SelectedFood.FoodName);
+        var temp = (Convert.ToDecimal(SelectedFood.Protein) / 100) * DailyFood.Amount;
 
         StateHasChanged();
+    }
+
+    void Reset()
+    {
+        NavigationManager.Refresh(forceReload: true);
+    }
+
+    async void SubmitFood()
+    {
+        bool? result = await DialogService.Confirm("Are you sure you want to add this food item to your breakfast today?");
+        if (result == false) { return; }
+
+        DailyFood.FoodId = SelectedFood.FoodId;
+        DailyFood.MealType = MealType
     }
 }
