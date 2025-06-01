@@ -154,7 +154,7 @@
         DailyNutrition = Today.DailyNutrition;
         
         Goals = await context.Goals.ToListAsync();
-        BreakfastFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Breakfast").ToListAsync();;
+        BreakfastFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Breakfast").Include(y => y.Food).Include(z => z.Meal).ToListAsync();;
 
         CaloriesGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Calories").TargetValue);
         ProteinGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Protein").TargetValue);

@@ -67,6 +67,7 @@ public partial class FitnessTrackerContext : DbContext
 
             entity.HasOne(d => d.Log).WithMany(p => p.DailyFoods)
                 .HasForeignKey(d => d.LogId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("Daily_Foods_Daily_Nutrition_FK");
 
             entity.HasOne(d => d.Meal).WithMany(p => p.DailyFoods)

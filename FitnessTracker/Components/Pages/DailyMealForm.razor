@@ -137,6 +137,7 @@
 
         DailyFood.FoodId = SelectedFood2.FoodId;
         DailyFood.MealType = MealType;
+        DailyFood.LogId = Today.LogId;
 
         context.DailyFoods.Add(DailyFood);
         context.SaveChanges();

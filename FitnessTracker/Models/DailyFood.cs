@@ -15,11 +15,11 @@ public partial class DailyFood
 
     public string MealType { get; set; } = null!;
 
-    public int? LogId { get; set; }
+    public int LogId { get; set; }
 
     public virtual Food? Food { get; set; }
 
-    public virtual DailyNutrition? Log { get; set; }
+    public virtual DailyNutrition Log { get; set; } = null!;
 
     public virtual Meal? Meal { get; set; }
 }
