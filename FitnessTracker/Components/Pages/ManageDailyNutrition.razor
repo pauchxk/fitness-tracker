@@ -109,6 +109,7 @@
 @code
 {
     private FitnessTrackerContext context = default!;
+    public bool NewLog = false;
     public required DailyLog Today = new DailyLog();
     public required DailyNutrition DailyNutrition = new DailyNutrition();
     public required DateOnly datetoday = DateOnly.FromDateTime(DateTime.Today);
@@ -124,23 +125,29 @@
     {
         context = DbFactory.CreateDbContext();
 
-        try
-        { Today = await context.DailyLogs.OrderByDescending(x => x.LogDate).LastAsync(); }
-        catch { }
-        if (Today == null || datetoday != Today.LogDate)
-        { 
+        //Get most recent daily log
+        Today = await context.DailyLogs.OrderByDescending(x => x.LogDate).Include(y => y.DailyNutrition).FirstOrDefaultAsync();
+
+        //If no result, or date does not match, make a new log.
+        if (Today == null)
+        { NewLog = true; }
+        else if (Today.LogDate != datetoday)
+        { NewLog = true; }
+
+        if (NewLog)
+        {
             Today = new DailyLog();
             Today.LogDate = datetoday;
             await context.DailyLogs.AddAsync(Today);
             await context.SaveChangesAsync();
         }
-
-        DailyNutrition = await context.DailyNutritions.FirstOrDefaultAsync(x => x.LogId == Today.LogId);
-        if (DailyNutrition.LogId == null)
+        
+        //If daily log is new, it won't have a daily nutrition record. If so, make one and attach it to dailylog.
+        if (Today.DailyNutrition == null)
         { 
-            DailyNutrition = new DailyNutrition();
-            DailyNutrition.LogId = Today.LogId;
-            await context.DailyNutritions.AddAsync(DailyNutrition);
+            Today.DailyNutrition = new DailyNutrition();
+            Today.DailyNutrition.LogId = Today.LogId;
+            await context.DailyNutritions.AddAsync(Today.DailyNutrition);
             await context.SaveChangesAsync();
         }
         
