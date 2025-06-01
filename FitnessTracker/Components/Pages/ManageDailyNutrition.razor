@@ -150,6 +150,8 @@
             await context.DailyNutritions.AddAsync(Today.DailyNutrition);
             await context.SaveChangesAsync();
         }
+
+        DailyNutrition = Today.DailyNutrition;
         
         Goals = await context.Goals.ToListAsync();
         BreakfastFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Breakfast").ToListAsync();;

@@ -65,6 +65,7 @@
 @code
 {
     private FitnessTrackerContext context = default!;
+    public DailyNutrition DailyNutrition = new DailyNutrition();
     public required DailyLog Today = new DailyLog();
     public required DateOnly datetoday = DateOnly.FromDateTime(DateTime.Today);
     public bool NewLog = false;
@@ -98,6 +99,8 @@
             await context.DailyNutritions.AddAsync(Today.DailyNutrition);
             await context.SaveChangesAsync();
         }
+
+        DailyNutrition = Today.DailyNutrition;
 
         StateHasChanged();
     }

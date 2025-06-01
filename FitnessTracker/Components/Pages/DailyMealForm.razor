@@ -83,7 +83,7 @@
 
         Foods = await context.Foods.ToListAsync();
         DailyFood.Amount = 100;
-        
+
         //Get most recent daily log
         Today = await context.DailyLogs.OrderByDescending(x => x.LogDate).Include(y => y.DailyNutrition).FirstOrDefaultAsync();
 
@@ -109,6 +109,8 @@
             await context.DailyNutritions.AddAsync(Today.DailyNutrition);
             await context.SaveChangesAsync();
         }
+
+        DailyNutrition = Today.DailyNutrition;
 
         StateHasChanged();
     }
