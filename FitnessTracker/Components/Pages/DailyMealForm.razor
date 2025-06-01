@@ -52,6 +52,14 @@
         </RadzenCard>
     }
 
+    @if (FoodMeal)
+    {
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Style="width: 100%">
+            <RadzenDropDown Data="@Meals" TValue="string" Placeholder="Select Meal" @bind-Value="@SelectedMeal1.MealName" TextProperty="@nameof(Meal.MealName)" ValueProperty="@nameof(Meal.MealName)" Change="@(args => MealOnChange())"/>
+            <RadzenDropDown Data="@MealTypes" @bind-Value="@MealType" Placeholder="Select Meal Type"/>
+        </RadzenStack>
+    }
+
     <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Success" Text="Add Food to Daily Log" Click="@SubmitFood" Visible="@(FoodMeal == false && SelectedFood2.FoodGroup != null)"/>
 
 </RadzenStack>
@@ -67,6 +75,9 @@
     public List<Food> Foods = new List<Food>();
     public Food SelectedFood1 = new Food();
     public Food SelectedFood2 = new Food();
+    public List<Meal> Meals = new List<Meal>();
+    public Meal SelectedMeal1 = new Meal();
+    public Meal SelectedMeal2 = new Meal();
     public DailyFood DailyFood = new DailyFood();
     public required string MealType { get; set; }
     public required List<string> MealTypes = new List<string>
@@ -82,6 +93,7 @@
         context = DbFactory.CreateDbContext();
 
         Foods = await context.Foods.ToListAsync();
+        Meals = await context.Meals.Include(x => x.FoodInMeals).ThenInclude(y => y.Food).ToListAsync();
         DailyFood.Amount = 100;
 
         //Get most recent daily log
@@ -112,6 +124,12 @@
 
         DailyNutrition = Today.DailyNutrition;
 
+        StateHasChanged();
+    }
+
+    void MealOnChange()
+    {
+        SelectedMeal2 = Meals.Find(x => x.MealName == SelectedMeal1.MealName);
         StateHasChanged();
     }
 
