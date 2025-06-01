@@ -65,26 +65,49 @@
         <RadzenCard Variant="Variant.Outlined" Style="height: 300px; width: 50%">
             <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%">
                 <h3>Breakfast</h3>
-                <RadzenCard Variant="Variant.Flat" Style="height: 100%; width: 100%">
-                    @foreach (var food in BreakfastFoods)
-                    {
-                        @if (food.Food != null)
-                        {
-                            <RadzenText TextStyle="TextStyle.Body1">@(food.Food.FoodName) (@(food.Amount)g)</RadzenText>
-                        }
-                        
-                        @if (food.Meal != null)
-                        {
-                            <RadzenText TextStyle="TextStyle.Body1">@food.Meal.MealName</RadzenText>
-                        }
-                    }
+                <RadzenCard Variant="Variant.Outlined" Style="height: 100%; width: 100%">
+                    <RadzenDataGrid Data="@BreakfastFoods" Style="height: 100%; width: 100%">
+                        <Columns>
+                            <RadzenDataGridColumn Title="Name">
+                                <Template Context="breakfast">
+                                    @if (breakfast.Food != null)
+                                    {
+                                        <RadzenLabel>@breakfast.Food.FoodName</RadzenLabel>
+                                    }
+                                    @if (breakfast.Meal != null)
+                                    {
+                                        <RadzenLabel>@breakfast.Meal.MealName</RadzenLabel>
+                                    }
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn Property="Amount" Title="Amount (g)"/>
+                        </Columns>
+                    </RadzenDataGrid>
                 </RadzenCard>
             </RadzenStack>
         </RadzenCard>
         <RadzenCard Variant="Variant.Outlined" Style="height: 300px; width: 50%">
             <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%">
                 <h3>Lunch</h3>
-
+                <RadzenCard Variant="Variant.Outlined" Style="height: 100%; width: 100%">
+                    <RadzenDataGrid Data="@LunchFoods" Style="height: 100%; width: 100%">
+                        <Columns>
+                            <RadzenDataGridColumn Title="Name">
+                                <Template Context="lunch">
+                                    @if (lunch.Food != null)
+                                    {
+                                        <RadzenLabel>@lunch.Food.FoodName</RadzenLabel>
+                                    }
+                                    @if (lunch.Meal != null)
+                                    {
+                                        <RadzenLabel>@lunch.Meal.MealName</RadzenLabel>
+                                    }
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn Property="Amount" Title="Amount (g)"/>
+                        </Columns>
+                    </RadzenDataGrid>
+                </RadzenCard>
             </RadzenStack>
         </RadzenCard>
     </RadzenStack>
@@ -93,13 +116,49 @@
         <RadzenCard Variant="Variant.Outlined" Style="height: 300px; width: 50%">
             <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%">
                 <h3>Dinner</h3>
-
+                <RadzenCard Variant="Variant.Outlined" Style="height: 100%; width: 100%">
+                    <RadzenDataGrid Data="@DinnerFoods" Style="height: 100%; width: 100%">
+                        <Columns>
+                            <RadzenDataGridColumn Title="Name">
+                                <Template Context="dinner">
+                                    @if (dinner.Food != null)
+                                    {
+                                        <RadzenLabel>@dinner.Food.FoodName</RadzenLabel>
+                                    }
+                                    @if (dinner.Meal != null)
+                                    {
+                                        <RadzenLabel>@dinner.Meal.MealName</RadzenLabel>
+                                    }
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn Property="Amount" Title="Amount (g)"/>
+                        </Columns>
+                    </RadzenDataGrid>
+                </RadzenCard>
             </RadzenStack>
         </RadzenCard>
         <RadzenCard Variant="Variant.Outlined" Style="height: 300px; width: 50%">
             <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%">
                 <h3>Snacks</h3>
-
+                <RadzenCard Variant="Variant.Outlined" Style="height: 100%; width: 100%">
+                    <RadzenDataGrid Data="@SnackFoods" Style="height: 100%; width: 100%">
+                        <Columns>
+                            <RadzenDataGridColumn Title="Name">
+                                <Template Context="snack">
+                                    @if (snack.Food != null)
+                                    {
+                                        <RadzenLabel>@snack.Food.FoodName</RadzenLabel>
+                                    }
+                                    @if (snack.Meal != null)
+                                    {
+                                        <RadzenLabel>@snack.Meal.MealName</RadzenLabel>
+                                    }
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn Property="Amount" Title="Amount (g)"/>
+                        </Columns>
+                    </RadzenDataGrid>
+                </RadzenCard>
             </RadzenStack>
         </RadzenCard>
     </RadzenStack>
@@ -121,6 +180,9 @@
     public required int FiberGoal = 0;
 
     public required List<DailyFood> BreakfastFoods = new List<DailyFood>();
+    public required List<DailyFood> LunchFoods = new List<DailyFood>();
+    public required List<DailyFood> DinnerFoods = new List<DailyFood>();
+    public required List<DailyFood> SnackFoods = new List<DailyFood>();
     protected override async void OnInitialized()
     {
         context = DbFactory.CreateDbContext();
@@ -154,7 +216,10 @@
         DailyNutrition = Today.DailyNutrition;
         
         Goals = await context.Goals.ToListAsync();
-        BreakfastFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Breakfast").Include(y => y.Food).Include(z => z.Meal).ToListAsync();;
+        BreakfastFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Breakfast").Include(y => y.Food).Include(z => z.Meal).ToListAsync();
+        LunchFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Lunch").Include(y => y.Food).Include(z => z.Meal).ToListAsync();
+        DinnerFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Dinner").Include(y => y.Food).Include(z => z.Meal).ToListAsync();
+        SnackFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Snack").Include(y => y.Food).Include(z => z.Meal).ToListAsync();
 
         CaloriesGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Calories").TargetValue);
         ProteinGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Protein").TargetValue);

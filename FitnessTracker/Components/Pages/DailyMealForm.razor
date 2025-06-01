@@ -28,7 +28,7 @@
     {
         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Style="width: 100%">
             <RadzenDropDown Data="@Foods" TValue="string" Placeholder="Select Food" @bind-Value="@SelectedFood1.FoodName" TextProperty="@nameof(Food.FoodName)" ValueProperty="@nameof(Food.FoodName)" Change="@(args => OnChange())"/>
-            <RadzenNumeric Name="Amount" @bind-Value="@DailyFood.Amount" Placeholder="Amount (g)" TValue="int" Format="Amount: ###g"/>
+            <RadzenNumeric Name="Amount" @bind-Value="@DailyFood.Amount" Placeholder="Amount (g)" TValue="int"/>
             <RadzenDropDown Data="@MealTypes" @bind-Value="@MealType" Placeholder="Select Meal Type"/>
         </RadzenStack>
 
