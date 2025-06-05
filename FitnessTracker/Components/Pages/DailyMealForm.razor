@@ -18,7 +18,7 @@
         <RadzenStack Orientation="Orientation.Horizontal" class="rz-p-sm-1" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Style="width: 100%">
             <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Text="Reset" Click="@Reset"/>
             <RadzenLabel>Food</RadzenLabel>
-            <RadzenSwitch @bind-Value="@FoodMeal"/>
+            <RadzenSwitch @bind-Value="@FoodMeal" Change="@OnChangeType"/>
             <RadzenLabel>Meal</RadzenLabel>
             <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Danger" Text="Cancel" Click="@Cancel"/>
         </RadzenStack>
@@ -58,9 +58,39 @@
             <RadzenDropDown Data="@Meals" TValue="string" Placeholder="Select Meal" @bind-Value="@SelectedMeal1.MealName" TextProperty="@nameof(Meal.MealName)" ValueProperty="@nameof(Meal.MealName)" Change="@(args => MealOnChange())"/>
             <RadzenDropDown Data="@MealTypes" @bind-Value="@MealType" Placeholder="Select Meal Type"/>
         </RadzenStack>
+
+        <RadzenDataGrid Data="@(SelectedMeal2.FoodInMeals)" @ref="@MealsDataGrid" Visible="@(SelectedMeal2.Method != null)">
+            <HeaderTemplate>
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center"/>
+                <RadzenText TextStyle="TextStyle.H5">Total: </RadzenText>
+                <RadzenText TextStyle="TextStyle.H3">@(SelectedMeal2.Calories)</RadzenText>
+                <RadzenText TextStyle="TextStyle.H5">Calories</RadzenText>
+                <RadzenText TextStyle="TextStyle.H3">@(SelectedMeal2.Protein)g</RadzenText>
+                <RadzenText TextStyle="TextStyle.H5">Protein</RadzenText>
+                <RadzenText TextStyle="TextStyle.H3">@(SelectedMeal2.Fat)g</RadzenText>
+                <RadzenText TextStyle="TextStyle.H5">Fat</RadzenText>
+                <RadzenText TextStyle="TextStyle.H3">@(SelectedMeal2.Carbohydrates)g</RadzenText>
+                <RadzenText TextStyle="TextStyle.H5">Carbohydrates</RadzenText>
+                <RadzenText TextStyle="TextStyle.H3">@(SelectedMeal2.Fiber)g</RadzenText>
+                <RadzenText TextStyle="TextStyle.H5">Fiber</RadzenText>
+            </HeaderTemplate>
+            <Columns>
+                <RadzenDataGridColumn Property="Food.FoodName" Title="Name"/>
+                <RadzenDataGridColumn Property="Food.FoodGroup" Title="Food Group"/>
+                <RadzenDataGridColumn Property="Food.FoodSubGroup" Title="Sub-Group"/>
+                <RadzenDataGridColumn Property="Food.Amount" Title="Amount (g)"/>
+                <RadzenDataGridColumn Property="Food.Calories" Title="Calories (kcal)"/>
+                <RadzenDataGridColumn Property="Food.Protein" Title="Protein (g)"/>
+                <RadzenDataGridColumn Property="Food.Fat" Title="Fat (g)"/>
+                <RadzenDataGridColumn Property="Food.Carbohydrates" Title="Carbohydrates (g)"/>
+                <RadzenDataGridColumn Property="Food.Fiber" Title="Fiber (g)"/>
+                <RadzenDataGridColumn Property="Food.Notes" Title="Notes"/>
+            </Columns>
+        </RadzenDataGrid>
     }
 
     <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Success" Text="Add Food to Daily Log" Click="@SubmitFood" Visible="@(FoodMeal == false && SelectedFood2.FoodGroup != null)"/>
+    <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Success" Text="Add Meal to Daily Log" Click="@SubmitMeal" Visible="@(FoodMeal == true && SelectedMeal2.Method != null)"/>
 
 </RadzenStack>
 
@@ -78,6 +108,7 @@
     public List<Meal> Meals = new List<Meal>();
     public Meal SelectedMeal1 = new Meal();
     public Meal SelectedMeal2 = new Meal();
+    public RadzenDataGrid<FoodInMeal> MealsDataGrid;
     public DailyFood DailyFood = new DailyFood();
     public required string MealType { get; set; }
     public required List<string> MealTypes = new List<string>
@@ -127,9 +158,18 @@
         StateHasChanged();
     }
 
-    void MealOnChange()
+    void OnChangeType()
+    {
+        SelectedFood1 = new Food();
+        SelectedFood2 = new Food();
+        SelectedMeal1 = new Meal();
+        SelectedMeal2 = new Meal();
+    }
+
+    async void MealOnChange()
     {
         SelectedMeal2 = Meals.Find(x => x.MealName == SelectedMeal1.MealName);
+        await MealsDataGrid.Reload();
         StateHasChanged();
     }
 
@@ -165,6 +205,30 @@
         DailyNutrition.Fat = DailyNutrition.Fat + SelectedFood2.Fat;
         DailyNutrition.Carbohydrates = DailyNutrition.Carbohydrates + SelectedFood2.Carbohydrates;
         DailyNutrition.Fiber = DailyNutrition.Fiber + SelectedFood2.Fiber;
+
+        context.DailyNutritions.Update(DailyNutrition);
+        context.SaveChanges();
+
+        NavigationManager.NavigateTo("Daily-Nutrition");
+    }
+
+    async void SubmitMeal()
+    {
+        bool? result = await DialogService.Confirm("Are you sure you want to add this meal to today's log?");
+        if (result == false) { return; }
+
+        DailyFood.MealId = SelectedMeal2.MealId;
+        DailyFood.MealType = MealType;
+        DailyFood.LogId = Today.LogId;
+
+        context.DailyFoods.Add(DailyFood);
+        context.SaveChanges();
+
+        DailyNutrition.Calories = DailyNutrition.Calories + SelectedMeal2.Calories;
+        DailyNutrition.Protein = DailyNutrition.Protein + SelectedMeal2.Protein;
+        DailyNutrition.Fat = DailyNutrition.Fat + SelectedMeal2.Fat;
+        DailyNutrition.Carbohydrates = DailyNutrition.Carbohydrates + SelectedMeal2.Carbohydrates;
+        DailyNutrition.Fiber = DailyNutrition.Fiber + SelectedMeal2.Fiber;
 
         context.DailyNutritions.Update(DailyNutrition);
         context.SaveChanges();
