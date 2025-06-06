@@ -200,13 +200,12 @@
         context.DailyFoods.Add(DailyFood);
         context.SaveChanges();
 
-        DailyNutrition.Calories = DailyNutrition.Calories + SelectedFood2.Calories;
-        DailyNutrition.Protein = DailyNutrition.Protein + SelectedFood2.Protein;
-        DailyNutrition.Fat = DailyNutrition.Fat + SelectedFood2.Fat;
-        DailyNutrition.Carbohydrates = DailyNutrition.Carbohydrates + SelectedFood2.Carbohydrates;
-        DailyNutrition.Fiber = DailyNutrition.Fiber + SelectedFood2.Fiber;
+        DailyNutrition.Calories = Convert.ToInt32(DailyNutrition.Calories + (Convert.ToDecimal(SelectedFood2.Calories) / 100 * DailyFood.Amount));
+        DailyNutrition.Protein = Convert.ToInt32(DailyNutrition.Protein + (Convert.ToDecimal(SelectedFood2.Protein) / 100 * DailyFood.Amount));
+        DailyNutrition.Fat = Convert.ToInt32(DailyNutrition.Fat + (Convert.ToDecimal(SelectedFood2.Fat) / 100 * DailyFood.Amount));
+        DailyNutrition.Carbohydrates = Convert.ToInt32(DailyNutrition.Carbohydrates + (Convert.ToDecimal(SelectedFood2.Carbohydrates) / 100 * DailyFood.Amount));
+        DailyNutrition.Fiber = Convert.ToInt32(DailyNutrition.Fiber + (Convert.ToDecimal(SelectedFood2.Fiber) / 100 * DailyFood.Amount));
 
-        context.DailyNutritions.Update(DailyNutrition);
         context.SaveChanges();
 
         NavigationManager.NavigateTo("Daily-Nutrition");
@@ -224,11 +223,11 @@
         context.DailyFoods.Add(DailyFood);
         context.SaveChanges();
 
-        DailyNutrition.Calories = DailyNutrition.Calories + SelectedMeal2.Calories;
-        DailyNutrition.Protein = DailyNutrition.Protein + SelectedMeal2.Protein;
-        DailyNutrition.Fat = DailyNutrition.Fat + SelectedMeal2.Fat;
-        DailyNutrition.Carbohydrates = DailyNutrition.Carbohydrates + SelectedMeal2.Carbohydrates;
-        DailyNutrition.Fiber = DailyNutrition.Fiber + SelectedMeal2.Fiber;
+        DailyNutrition.Calories = Convert.ToInt32(DailyNutrition.Calories + (Convert.ToDecimal(SelectedMeal2.Calories) / 100 * DailyFood.Amount));
+        DailyNutrition.Protein = Convert.ToInt32(DailyNutrition.Protein + (Convert.ToDecimal(SelectedMeal2.Protein) / 100 * DailyFood.Amount));
+        DailyNutrition.Fat = Convert.ToInt32(DailyNutrition.Fat + (Convert.ToDecimal(SelectedMeal2.Fat) / 100 * DailyFood.Amount));
+        DailyNutrition.Carbohydrates = Convert.ToInt32(DailyNutrition.Carbohydrates + (Convert.ToDecimal(SelectedMeal2.Carbohydrates) / 100 * DailyFood.Amount));
+        DailyNutrition.Fiber = Convert.ToInt32(DailyNutrition.Fiber + (Convert.ToDecimal(SelectedMeal2.Fiber) / 100 * DailyFood.Amount));
 
         context.DailyNutritions.Update(DailyNutrition);
         context.SaveChanges();
