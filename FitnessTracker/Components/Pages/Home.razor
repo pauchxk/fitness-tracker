@@ -1,7 +1,110 @@
 ﻿@page "/"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using FitnessTracker.Models
+@using Radzen
+@using Radzen.Blazor
+@inject IDbContextFactory<FitnessTracker.Models.FitnessTrackerContext> DbFactory
+@inject NavigationManager NavigationManager
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Dashboard</PageTitle>
+<h1>Dashboard</h1>
 
-<h1>Hello, world!</h1>
+<RadzenStack Orientation="Orientation.Vertical" Style="height: 90%" class="rz-p-sm-1" Gap="0.5rem">
 
-Welcome to your new app.
+    <RadzenPanel AllowCollapse="false" class="rz-my-1 rz-mx-auto" Style="width: 100%">
+        <HeaderTemplate>
+            <RadzenText TextStyle="TextStyle.H5" class="rz-display-flex rz-align-items-center rz-m-0">
+                <RadzenIcon Icon="data_usage" class="rz-me-1"/><b>Daily Stats</b>
+            </RadzenText>
+        </HeaderTemplate>
+        <ChildContent>
+            <RadzenCard Variant="Variant.Outlined" class="rz-mt-4">
+                <RadzenLabel>Today's date, current weight, calorie + protein progress percentage, workout completed, stretches completed, mood</RadzenLabel>
+            </RadzenCard>
+        </ChildContent>
+    </RadzenPanel>
+
+    <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
+
+        <RadzenPanel AllowCollapse="false" class="rz-my-1 rz-mx-auto" Style="width: 100%">
+            <HeaderTemplate>
+                <RadzenText TextStyle="TextStyle.H5" class="rz-display-flex rz-align-items-center rz-m-0">
+                    <RadzenIcon Icon="data_usage" class="rz-me-1"/><b>Workout</b>
+                </RadzenText>
+            </HeaderTemplate>
+            <ChildContent>
+                <RadzenCard Variant="Variant.Outlined" class="rz-mt-4">
+                    <RadzenLabel>Workout name, length, exercises done, PRs if any, notes</RadzenLabel>
+                </RadzenCard>
+            </ChildContent>
+        </RadzenPanel>
+
+        <RadzenPanel AllowCollapse="false" class="rz-my-1 rz-mx-auto" Style="width: 100%">
+            <HeaderTemplate>
+                <RadzenStack Orientation="Orientation.Horizontal">
+                    <RadzenText TextStyle="TextStyle.H5" class="rz-display-flex rz-align-items-center rz-m-0">
+                        <RadzenIcon Icon="data_usage" class="rz-me-1"/><b>Nutrition</b>
+                    </RadzenText>
+                    <div style="flex-grow: 1;"/>
+                    <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Icon="add_circle" Text="Manage Nutrition" Click="@ManageNutrition"/>
+                </RadzenStack>
+            </HeaderTemplate>
+            <ChildContent>
+                <RadzenCard Variant="Variant.Outlined" class="rz-mt-4">
+                    <RadzenLabel>Macro progress against goals, meals eaten separated by type (breakfast etc.) and notes</RadzenLabel>
+                </RadzenCard>
+            </ChildContent>
+        </RadzenPanel>
+
+    </RadzenStack>
+
+</RadzenStack>
+
+@code
+{
+    private FitnessTrackerContext context = default!;
+    public DailyNutrition DailyNutrition = new DailyNutrition();
+    public required DailyLog Today = new DailyLog();
+    public required DateOnly datetoday = DateOnly.FromDateTime(DateTime.Today);
+    public bool NewLog = false;
+
+    protected override async void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+
+        //Get most recent daily log
+        Today = await context.DailyLogs.OrderByDescending(x => x.LogDate).Include(y => y.DailyNutrition).FirstOrDefaultAsync();
+
+        //If no result, or date does not match, make a new log.
+        if (Today == null)
+        { NewLog = true; }
+        else if (Today.LogDate != datetoday)
+        { NewLog = true; }
+
+        if (NewLog)
+        {
+            Today = new DailyLog();
+            Today.LogDate = datetoday;
+            await context.DailyLogs.AddAsync(Today);
+            await context.SaveChangesAsync();
+        }
+        
+        //If daily log is new, it won't have a daily nutrition record. If so, make one and attach it to dailylog.
+        if (Today.DailyNutrition == null)
+        { 
+            Today.DailyNutrition = new DailyNutrition();
+            Today.DailyNutrition.LogId = Today.LogId;
+            await context.DailyNutritions.AddAsync(Today.DailyNutrition);
+            await context.SaveChangesAsync();
+        }
+
+        DailyNutrition = Today.DailyNutrition;
+
+        StateHasChanged();
+    }
+
+    public void ManageNutrition()
+    { NavigationManager.NavigateTo("Daily-Nutrition"); }
+}

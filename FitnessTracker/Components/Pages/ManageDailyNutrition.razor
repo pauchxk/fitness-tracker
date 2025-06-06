@@ -1,0 +1,227 @@
+@page "/Daily-Nutrition"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using FitnessTracker.Models
+@using Radzen
+@using Radzen.Blazor
+@inject IDbContextFactory<FitnessTracker.Models.FitnessTrackerContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Daily Nutrition</PageTitle>
+<h1>Daily Nutrition</h1>
+
+<RadzenStack Orientation="Orientation.Vertical" Style="height: 100%" class="rz-p-sm-1">
+
+    <RadzenCard Variant="Variant.Outlined" Style="height: 240px; width: 100%" >
+        <RadzenStack Orientation="Orientation.Horizontal" Style="height: 20%">
+            <h3>Macro Overview</h3>
+            <div style="flex-grow: 1;"/>
+            <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Icon="add_circle" Text="Edit Goals" Click="@EditGoals"/>
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" Style="height: 80%; width: 100%" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Gap="1rem">
+            <RadzenRadialGauge Style="width: 100%; height: 100%">
+                <RadzenRadialGaugeScale StartAngle="-150" EndAngle="150" Min="0" Max="@CaloriesGoal" ShowTickLabels="false" TickPosition="GaugeTickPosition.None">
+                    <RadzenRadialGaugeScalePointer Value="@DailyNutrition.Calories" Length="0.6" ShowValue="true">
+                        <Template Context="pointer">
+                            <RadzenStack AlignItems="AlignItems.Center" Gap="0" class="rz-mt-4">
+                                <RadzenText TextStyle="TextStyle.H5" class="rz-m-0"><strong>@pointer.Value</strong></RadzenText>
+                                <RadzenText TextStyle="TextStyle.Caption">Calories (kcal)</RadzenText>
+                            </RadzenStack>
+                        </Template>
+                    </RadzenRadialGaugeScalePointer>
+                    <RadzenRadialGaugeScaleRange From="2000" To="@CaloriesGoal" Fill="green" />
+                    <RadzenRadialGaugeScaleRange From="1000" To="2000" Fill="orange" />
+                    <RadzenRadialGaugeScaleRange From="0" To="1000" Fill="red" />
+                </RadzenRadialGaugeScale>
+            </RadzenRadialGauge> 
+            <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="height: 100%; width: 100%">
+                <RadzenCard Variant="Variant.Outlined">
+                    <RadzenText>Fats: @DailyNutrition.Fat/@(FatGoal)g</RadzenText>
+                    <RadzenText>Carbohydrates: @DailyNutrition.Carbohydrates/@(CarbohydrateGoal)g</RadzenText>
+                    <RadzenText>Fiber: @DailyNutrition.Fiber/@(FiberGoal)g</RadzenText>
+                </RadzenCard>
+                <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Text="Add Food / Meal" Click="@(args => NavigationManager.NavigateTo("Daily-Meal-Form"))"/>
+            </RadzenStack>
+            <RadzenRadialGauge Style="width: 100%; height: 100%">
+                <RadzenRadialGaugeScale StartAngle="-150" EndAngle="150" Min="0" Max="@ProteinGoal" ShowTickLabels="false" TickPosition="GaugeTickPosition.None">
+                    <RadzenRadialGaugeScalePointer Value="@DailyNutrition.Protein" Length="0.6" ShowValue="true">
+                        <Template Context="pointer">
+                            <RadzenStack AlignItems="AlignItems.Center" Gap="0" class="rz-mt-4">
+                                <RadzenText TextStyle="TextStyle.H5" class="rz-m-0"><strong>@pointer.Value</strong></RadzenText>
+                                <RadzenText TextStyle="TextStyle.Caption">Protein (g)</RadzenText>
+                            </RadzenStack>
+                        </Template>
+                    </RadzenRadialGaugeScalePointer>
+                    <RadzenRadialGaugeScaleRange From="120" To="@ProteinGoal" Fill="green" />
+                    <RadzenRadialGaugeScaleRange From="50" To="120" Fill="orange" />
+                    <RadzenRadialGaugeScaleRange From="0" To="50" Fill="red" />
+                </RadzenRadialGaugeScale>
+            </RadzenRadialGauge> 
+        </RadzenStack>
+    </RadzenCard>
+
+    <RadzenStack Orientation="Orientation.Horizontal">
+        <RadzenCard Variant="Variant.Outlined" Style="height: 300px; width: 50%">
+            <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%">
+                <h3>Breakfast</h3>
+                    <RadzenDataGrid Data="@BreakfastFoods" Style="height: 100%; width: 100%">
+                        <Columns>
+                            <RadzenDataGridColumn Title="Name">
+                                <Template Context="breakfast">
+                                    @if (breakfast.Food != null)
+                                    {
+                                        <RadzenLabel>@breakfast.Food.FoodName</RadzenLabel>
+                                    }
+                                    @if (breakfast.Meal != null)
+                                    {
+                                        <RadzenLabel>@breakfast.Meal.MealName</RadzenLabel>
+                                    }
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn Property="Amount" Title="Amount (g)"/>
+                        </Columns>
+                    </RadzenDataGrid>
+            </RadzenStack>
+        </RadzenCard>
+        <RadzenCard Variant="Variant.Outlined" Style="height: 300px; width: 50%">
+            <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%">
+                <h3>Lunch</h3>
+                    <RadzenDataGrid Data="@LunchFoods" Style="height: 100%; width: 100%">
+                        <Columns>
+                            <RadzenDataGridColumn Title="Name">
+                                <Template Context="lunch">
+                                    @if (lunch.Food != null)
+                                    {
+                                        <RadzenLabel>@lunch.Food.FoodName</RadzenLabel>
+                                    }
+                                    @if (lunch.Meal != null)
+                                    {
+                                        <RadzenLabel>@lunch.Meal.MealName</RadzenLabel>
+                                    }
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn Property="Amount" Title="Amount (g)"/>
+                        </Columns>
+                    </RadzenDataGrid>
+            </RadzenStack>
+        </RadzenCard>
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal">
+        <RadzenCard Variant="Variant.Outlined" Style="height: 300px; width: 50%">
+            <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%">
+                <h3>Dinner</h3>
+                    <RadzenDataGrid Data="@DinnerFoods" Style="height: 100%; width: 100%">
+                        <Columns>
+                            <RadzenDataGridColumn Title="Name">
+                                <Template Context="dinner">
+                                    @if (dinner.Food != null)
+                                    {
+                                        <RadzenLabel>@dinner.Food.FoodName</RadzenLabel>
+                                    }
+                                    @if (dinner.Meal != null)
+                                    {
+                                        <RadzenLabel>@dinner.Meal.MealName</RadzenLabel>
+                                    }
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn Property="Amount" Title="Amount (g)"/>
+                        </Columns>
+                    </RadzenDataGrid>
+            </RadzenStack>
+        </RadzenCard>
+        <RadzenCard Variant="Variant.Outlined" Style="height: 300px; width: 50%">
+            <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%">
+                <h3>Snacks</h3>
+                    <RadzenDataGrid Data="@SnackFoods" Style="height: 100%; width: 100%">
+                        <Columns>
+                            <RadzenDataGridColumn Title="Name">
+                                <Template Context="snack">
+                                    @if (snack.Food != null)
+                                    {
+                                        <RadzenLabel>@snack.Food.FoodName</RadzenLabel>
+                                    }
+                                    @if (snack.Meal != null)
+                                    {
+                                        <RadzenLabel>@snack.Meal.MealName</RadzenLabel>
+                                    }
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn Property="Amount" Title="Amount (g)"/>
+                        </Columns>
+                    </RadzenDataGrid>
+            </RadzenStack>
+        </RadzenCard>
+    </RadzenStack>
+
+</RadzenStack>
+
+@code
+{
+    private FitnessTrackerContext context = default!;
+    public bool NewLog = false;
+    public required DailyLog Today = new DailyLog();
+    public required DailyNutrition DailyNutrition = new DailyNutrition();
+    public required DateOnly datetoday = DateOnly.FromDateTime(DateTime.Today);
+    public required List<Goal> Goals = new List<Goal>();
+    public required int CaloriesGoal = 0;
+    public required int ProteinGoal = 0;
+    public required int FatGoal = 0;
+    public required int CarbohydrateGoal = 0;
+    public required int FiberGoal = 0;
+
+    public required List<DailyFood> BreakfastFoods = new List<DailyFood>();
+    public required List<DailyFood> LunchFoods = new List<DailyFood>();
+    public required List<DailyFood> DinnerFoods = new List<DailyFood>();
+    public required List<DailyFood> SnackFoods = new List<DailyFood>();
+    protected override async void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+
+        //Get most recent daily log
+        Today = await context.DailyLogs.OrderByDescending(x => x.LogDate).Include(y => y.DailyNutrition).FirstOrDefaultAsync();
+
+        //If no result, or date does not match, make a new log.
+        if (Today == null)
+        { NewLog = true; }
+        else if (Today.LogDate != datetoday)
+        { NewLog = true; }
+
+        if (NewLog)
+        {
+            Today = new DailyLog();
+            Today.LogDate = datetoday;
+            await context.DailyLogs.AddAsync(Today);
+            await context.SaveChangesAsync();
+        }
+        
+        //If daily log is new, it won't have a daily nutrition record. If so, make one and attach it to dailylog.
+        if (Today.DailyNutrition == null)
+        { 
+            Today.DailyNutrition = new DailyNutrition();
+            Today.DailyNutrition.LogId = Today.LogId;
+            await context.DailyNutritions.AddAsync(Today.DailyNutrition);
+            await context.SaveChangesAsync();
+        }
+
+        DailyNutrition = Today.DailyNutrition;
+        
+        Goals = await context.Goals.ToListAsync();
+        BreakfastFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Breakfast").Include(y => y.Food).Include(z => z.Meal).ToListAsync();
+        LunchFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Lunch").Include(y => y.Food).Include(z => z.Meal).ToListAsync();
+        DinnerFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Dinner").Include(y => y.Food).Include(z => z.Meal).ToListAsync();
+        SnackFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Snack").Include(y => y.Food).Include(z => z.Meal).ToListAsync();
+
+        CaloriesGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Calories").TargetValue);
+        ProteinGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Protein").TargetValue);
+        FatGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Fat").TargetValue);
+        CarbohydrateGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Carbohydrate").TargetValue);
+        FiberGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Fiber").TargetValue);
+
+        StateHasChanged();
+    }
+
+    public void EditGoals()
+    { }
+}
