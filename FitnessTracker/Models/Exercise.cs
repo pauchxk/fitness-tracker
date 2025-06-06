@@ -21,5 +21,7 @@ public partial class Exercise
 
     public string ReccommendedRepsSets { get; set; } = null!;
 
+    public virtual ICollection<ExercisesInWorkout> ExercisesInWorkouts { get; set; } = new List<ExercisesInWorkout>();
+
     public virtual ICollection<PersonalRecord> PersonalRecords { get; set; } = new List<PersonalRecord>();
 }

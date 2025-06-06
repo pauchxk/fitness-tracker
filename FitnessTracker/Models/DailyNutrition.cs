@@ -3,15 +3,9 @@ using System.Collections.Generic;
 
 namespace FitnessTracker.Models;
 
-public partial class Meal
+public partial class DailyNutrition
 {
-    public int MealId { get; set; }
-
-    public string MealName { get; set; } = null!;
-
-    public string Method { get; set; } = null!;
-
-    public string? Notes { get; set; }
+    public int LogId { get; set; }
 
     public int Calories { get; set; }
 
@@ -23,9 +17,7 @@ public partial class Meal
 
     public int Fiber { get; set; }
 
-    public string Type { get; set; } = null!;
-
     public virtual ICollection<DailyFood> DailyFoods { get; set; } = new List<DailyFood>();
 
-    public virtual ICollection<FoodInMeal> FoodInMeals { get; set; } = new List<FoodInMeal>();
+    public virtual DailyLog Log { get; set; } = null!;
 }

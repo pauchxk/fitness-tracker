@@ -1,0 +1,237 @@
+@page "/Daily-Meal-Form"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using FitnessTracker.Models
+@using Radzen
+@using Radzen.Blazor
+@inject IDbContextFactory<FitnessTracker.Models.FitnessTrackerContext> DbFactory
+@inject NavigationManager NavigationManager
+@inject DialogService DialogService
+
+<PageTitle>Daily Meal</PageTitle>
+<h1>Daily Meal</h1>
+
+<RadzenStack Orientation="Orientation.Vertical" Style="height: 100%; width: 100%" class="rz-p-sm-1" AlignItems="AlignItems.Center">
+
+    <RadzenCard Variant="Variant.Outlined" Style="width: 100%">
+        <RadzenStack Orientation="Orientation.Horizontal" class="rz-p-sm-1" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Style="width: 100%">
+            <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Text="Reset" Click="@Reset"/>
+            <RadzenLabel>Food</RadzenLabel>
+            <RadzenSwitch @bind-Value="@FoodMeal" Change="@OnChangeType"/>
+            <RadzenLabel>Meal</RadzenLabel>
+            <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Danger" Text="Cancel" Click="@Cancel"/>
+        </RadzenStack>
+    </RadzenCard>
+
+    @if (!FoodMeal)
+    {
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Style="width: 100%">
+            <RadzenDropDown Data="@Foods" TValue="string" Placeholder="Select Food" @bind-Value="@SelectedFood1.FoodName" TextProperty="@nameof(Food.FoodName)" ValueProperty="@nameof(Food.FoodName)" Change="@(args => OnChange())"/>
+            <RadzenNumeric Name="Amount" @bind-Value="@DailyFood.Amount" Placeholder="Amount (g)" TValue="int"/>
+            <RadzenDropDown Data="@MealTypes" @bind-Value="@MealType" Placeholder="Select Meal Type"/>
+        </RadzenStack>
+
+        <RadzenCard Variant="Variant.Outlined" Visible="@(SelectedFood2.FoodGroup != null)" Style="width: 100%">
+            <RadzenStack Orientation="Orientation.Horizontal" Style="height: 100%; width: 100%" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
+                <RadzenColumn>
+                    <RadzenText TextStyle="TextStyle.Body1">Name:           @SelectedFood2.FoodName</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1">Food Group:     @(SelectedFood2.FoodGroup)</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1">Food Sub-Group: @(SelectedFood2.FoodSubGroup)</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1">Notes:          @(SelectedFood2.Notes)</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1">Amount:         @(DailyFood.Amount)g</RadzenText>
+                </RadzenColumn>
+                <RadzenColumn>
+                    <RadzenText TextStyle="TextStyle.Body1">Calories:       @(Convert.ToDecimal(SelectedFood2.Calories) / 100 * DailyFood.Amount)kcal</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1">Protein:        @(Convert.ToDecimal(SelectedFood2.Protein) / 100 * DailyFood.Amount)g</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1">Fat:            @(Convert.ToDecimal(SelectedFood2.Fat) / 100 * DailyFood.Amount)g</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1">Carbohydrates:  @(Convert.ToDecimal(SelectedFood2.Carbohydrates) / 100 * DailyFood.Amount)g</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1">Fiber:          @(Convert.ToDecimal(SelectedFood2.Fiber) / 100 * DailyFood.Amount)g</RadzenText>
+                </RadzenColumn>
+            </RadzenStack>
+        </RadzenCard>
+    }
+
+    @if (FoodMeal)
+    {
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Style="width: 100%">
+            <RadzenDropDown Data="@Meals" TValue="string" Placeholder="Select Meal" @bind-Value="@SelectedMeal1.MealName" TextProperty="@nameof(Meal.MealName)" ValueProperty="@nameof(Meal.MealName)" Change="@(args => MealOnChange())"/>
+            <RadzenDropDown Data="@MealTypes" @bind-Value="@MealType" Placeholder="Select Meal Type"/>
+        </RadzenStack>
+
+        <RadzenDataGrid Data="@(SelectedMeal2.FoodInMeals)" @ref="@MealsDataGrid" Visible="@(SelectedMeal2.Method != null)">
+            <HeaderTemplate>
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center"/>
+                <RadzenText TextStyle="TextStyle.H5">Total: </RadzenText>
+                <RadzenText TextStyle="TextStyle.H3">@(SelectedMeal2.Calories)</RadzenText>
+                <RadzenText TextStyle="TextStyle.H5">Calories</RadzenText>
+                <RadzenText TextStyle="TextStyle.H3">@(SelectedMeal2.Protein)g</RadzenText>
+                <RadzenText TextStyle="TextStyle.H5">Protein</RadzenText>
+                <RadzenText TextStyle="TextStyle.H3">@(SelectedMeal2.Fat)g</RadzenText>
+                <RadzenText TextStyle="TextStyle.H5">Fat</RadzenText>
+                <RadzenText TextStyle="TextStyle.H3">@(SelectedMeal2.Carbohydrates)g</RadzenText>
+                <RadzenText TextStyle="TextStyle.H5">Carbohydrates</RadzenText>
+                <RadzenText TextStyle="TextStyle.H3">@(SelectedMeal2.Fiber)g</RadzenText>
+                <RadzenText TextStyle="TextStyle.H5">Fiber</RadzenText>
+            </HeaderTemplate>
+            <Columns>
+                <RadzenDataGridColumn Property="Food.FoodName" Title="Name"/>
+                <RadzenDataGridColumn Property="Food.FoodGroup" Title="Food Group"/>
+                <RadzenDataGridColumn Property="Food.FoodSubGroup" Title="Sub-Group"/>
+                <RadzenDataGridColumn Property="Food.Amount" Title="Amount (g)"/>
+                <RadzenDataGridColumn Property="Food.Calories" Title="Calories (kcal)"/>
+                <RadzenDataGridColumn Property="Food.Protein" Title="Protein (g)"/>
+                <RadzenDataGridColumn Property="Food.Fat" Title="Fat (g)"/>
+                <RadzenDataGridColumn Property="Food.Carbohydrates" Title="Carbohydrates (g)"/>
+                <RadzenDataGridColumn Property="Food.Fiber" Title="Fiber (g)"/>
+                <RadzenDataGridColumn Property="Food.Notes" Title="Notes"/>
+            </Columns>
+        </RadzenDataGrid>
+    }
+
+    <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Success" Text="Add Food to Daily Log" Click="@SubmitFood" Visible="@(FoodMeal == false && SelectedFood2.FoodGroup != null)"/>
+    <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Success" Text="Add Meal to Daily Log" Click="@SubmitMeal" Visible="@(FoodMeal == true && SelectedMeal2.Method != null)"/>
+
+</RadzenStack>
+
+@code
+{
+    private FitnessTrackerContext context = default!;
+    public bool NewLog = false;
+    public required DailyLog Today = new DailyLog();
+    public required DateOnly datetoday = DateOnly.FromDateTime(DateTime.Today);
+    public DailyNutrition? DailyNutrition = new DailyNutrition();
+    public bool FoodMeal = false;
+    public List<Food> Foods = new List<Food>();
+    public Food SelectedFood1 = new Food();
+    public Food SelectedFood2 = new Food();
+    public List<Meal> Meals = new List<Meal>();
+    public Meal SelectedMeal1 = new Meal();
+    public Meal SelectedMeal2 = new Meal();
+    public RadzenDataGrid<FoodInMeal> MealsDataGrid;
+    public DailyFood DailyFood = new DailyFood();
+    public required string MealType { get; set; }
+    public required List<string> MealTypes = new List<string>
+        {
+            "Breakfast",
+            "Lunch",
+            "Dinner",
+            "Snack"
+        };
+
+    protected override async Task OnInitializedAsync()
+    {
+        context = DbFactory.CreateDbContext();
+
+        Foods = await context.Foods.ToListAsync();
+        Meals = await context.Meals.Include(x => x.FoodInMeals).ThenInclude(y => y.Food).ToListAsync();
+        DailyFood.Amount = 100;
+
+        //Get most recent daily log
+        Today = await context.DailyLogs.OrderByDescending(x => x.LogDate).Include(y => y.DailyNutrition).FirstOrDefaultAsync();
+
+        //If no result, or date does not match, make a new log.
+        if (Today == null)
+        { NewLog = true; }
+        else if (Today.LogDate != datetoday)
+        { NewLog = true; }
+
+        if (NewLog)
+        {
+            Today = new DailyLog();
+            Today.LogDate = datetoday;
+            await context.DailyLogs.AddAsync(Today);
+            await context.SaveChangesAsync();
+        }
+        
+        //If daily log is new, it won't have a daily nutrition record. If so, make one and attach it to dailylog.
+        if (Today.DailyNutrition == null)
+        { 
+            Today.DailyNutrition = new DailyNutrition();
+            Today.DailyNutrition.LogId = Today.LogId;
+            await context.DailyNutritions.AddAsync(Today.DailyNutrition);
+            await context.SaveChangesAsync();
+        }
+
+        DailyNutrition = Today.DailyNutrition;
+
+        StateHasChanged();
+    }
+
+    void OnChangeType()
+    {
+        SelectedFood1 = new Food();
+        SelectedFood2 = new Food();
+        SelectedMeal1 = new Meal();
+        SelectedMeal2 = new Meal();
+    }
+
+    async void MealOnChange()
+    {
+        SelectedMeal2 = Meals.Find(x => x.MealName == SelectedMeal1.MealName);
+        await MealsDataGrid.Reload();
+        StateHasChanged();
+    }
+
+    void OnChange()
+    {
+        SelectedFood2 = Foods.Find(x => x.FoodName == SelectedFood1.FoodName);
+        StateHasChanged();
+    }
+    void Reset()
+    {
+        NavigationManager.Refresh(forceReload: true);
+    }
+
+    void Cancel()
+    {
+        NavigationManager.NavigateTo("Daily-Nutrition");
+    }
+
+    async void SubmitFood()
+    {
+        bool? result = await DialogService.Confirm("Are you sure you want to add this food item to today's log?");
+        if (result == false) { return; }
+
+        DailyFood.FoodId = SelectedFood2.FoodId;
+        DailyFood.MealType = MealType;
+        DailyFood.LogId = Today.LogId;
+
+        context.DailyFoods.Add(DailyFood);
+        context.SaveChanges();
+
+        DailyNutrition.Calories = Convert.ToInt32(DailyNutrition.Calories + (Convert.ToDecimal(SelectedFood2.Calories) / 100 * DailyFood.Amount));
+        DailyNutrition.Protein = Convert.ToInt32(DailyNutrition.Protein + (Convert.ToDecimal(SelectedFood2.Protein) / 100 * DailyFood.Amount));
+        DailyNutrition.Fat = Convert.ToInt32(DailyNutrition.Fat + (Convert.ToDecimal(SelectedFood2.Fat) / 100 * DailyFood.Amount));
+        DailyNutrition.Carbohydrates = Convert.ToInt32(DailyNutrition.Carbohydrates + (Convert.ToDecimal(SelectedFood2.Carbohydrates) / 100 * DailyFood.Amount));
+        DailyNutrition.Fiber = Convert.ToInt32(DailyNutrition.Fiber + (Convert.ToDecimal(SelectedFood2.Fiber) / 100 * DailyFood.Amount));
+
+        context.SaveChanges();
+
+        NavigationManager.NavigateTo("Daily-Nutrition");
+    }
+
+    async void SubmitMeal()
+    {
+        bool? result = await DialogService.Confirm("Are you sure you want to add this meal to today's log?");
+        if (result == false) { return; }
+
+        DailyFood.MealId = SelectedMeal2.MealId;
+        DailyFood.MealType = MealType;
+        DailyFood.LogId = Today.LogId;
+
+        context.DailyFoods.Add(DailyFood);
+        context.SaveChanges();
+
+        DailyNutrition.Calories = Convert.ToInt32(DailyNutrition.Calories + (Convert.ToDecimal(SelectedMeal2.Calories) / 100 * DailyFood.Amount));
+        DailyNutrition.Protein = Convert.ToInt32(DailyNutrition.Protein + (Convert.ToDecimal(SelectedMeal2.Protein) / 100 * DailyFood.Amount));
+        DailyNutrition.Fat = Convert.ToInt32(DailyNutrition.Fat + (Convert.ToDecimal(SelectedMeal2.Fat) / 100 * DailyFood.Amount));
+        DailyNutrition.Carbohydrates = Convert.ToInt32(DailyNutrition.Carbohydrates + (Convert.ToDecimal(SelectedMeal2.Carbohydrates) / 100 * DailyFood.Amount));
+        DailyNutrition.Fiber = Convert.ToInt32(DailyNutrition.Fiber + (Convert.ToDecimal(SelectedMeal2.Fiber) / 100 * DailyFood.Amount));
+
+        context.DailyNutritions.Update(DailyNutrition);
+        context.SaveChanges();
+
+        NavigationManager.NavigateTo("Daily-Nutrition");
+    }
+}
