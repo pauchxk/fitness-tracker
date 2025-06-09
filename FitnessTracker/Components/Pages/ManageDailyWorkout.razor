@@ -1,0 +1,13 @@
+@page "/Daily-Workout"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using FitnessTracker.Models
+@using Radzen
+@using Radzen.Blazor
+@inject IDbContextFactory<FitnessTracker.Models.FitnessTrackerContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Daily Workout</PageTitle>
+<h1>Daily Workout</h1>
+

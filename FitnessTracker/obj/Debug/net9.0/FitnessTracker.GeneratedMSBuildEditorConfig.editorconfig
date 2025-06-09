@@ -52,6 +52,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9NYW5hZ2VEYWlseU51dHJpdGlvbi5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/pauchxk/Programming/Blazor/fitness-tracker/FitnessTracker/Components/Pages/ManageDailyWorkout.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9NYW5hZ2VEYWlseVdvcmtvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/pauchxk/Programming/Blazor/fitness-tracker/FitnessTracker/Components/Pages/NewMeal.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9OZXdNZWFsLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
