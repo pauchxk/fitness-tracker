@@ -6,8 +6,128 @@
 @using Radzen
 @using Radzen.Blazor
 @inject IDbContextFactory<FitnessTracker.Models.FitnessTrackerContext> DbFactory
+@inject DialogService DialogService
 @inject NavigationManager NavigationManager
 
 <PageTitle>Daily Workout</PageTitle>
 <h1>Daily Workout</h1>
 
+<RadzenStack Orientation="Orientation.Vertical" Style="height: 90%; width: 100%" class="rz-p-sm-1">
+
+    <RadzenCard Variant="Variant.Outlined" Style="height: 20%; width: 100%">
+        <RadzenStack Orientation="Orientation.Horizontal" Style="height: 100%; width: 100%" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
+            <RadzenText>Workout metrics</RadzenText>
+        </RadzenStack>
+    </RadzenCard>
+
+    <RadzenDataGrid Data="@ExercisesInWorkout" @ref="@ExercisesDataGrid">
+        <HeaderTemplate>
+            <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Success" Text="Add Exercise" Click="@AddExercise"/>
+        </HeaderTemplate>
+        <Columns>
+            <RadzenDataGridColumn Property="Exercise.ExerciseName" Title="Name"/>
+            <RadzenDataGridColumn Property="Weight" Title="Weight"/>
+            <RadzenDataGridColumn Property="Reps" Title="Reps"/>
+            <RadzenDataGridColumn Property="Rpe" Title="RPE"/>
+            <RadzenDataGridColumn Property="Partials" Title="Partials"/>
+            <RadzenDataGridColumn Property="Notes" Title="Notes"/>
+        </Columns>
+    </RadzenDataGrid>
+
+</RadzenStack>
+
+@code
+{
+    private FitnessTrackerContext context = default!;
+    public required DailyWorkout DailyWorkout = new DailyWorkout();
+    public required DailyLog Today = new DailyLog();
+    public required DateOnly datetoday = DateOnly.FromDateTime(DateTime.Today);
+    public bool NewLog = false;
+
+    public List<ExercisesInWorkout> ExercisesInWorkout = new List<ExercisesInWorkout>();
+    public required RadzenDataGrid<ExercisesInWorkout> ExercisesDataGrid;
+    public required List<Exercise> Exercises = new List<Exercise>();
+    public required Exercise SelectedExercise = new Exercise();
+    public required ExercisesInWorkout NewExerciseInWorkout = new ExercisesInWorkout();
+
+    protected override async void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+
+        //Get most recent daily log
+        Today = await context.DailyLogs.OrderByDescending(x => x.LogDate).Include(y => y.DailyWorkout).ThenInclude(y => y.ExercisesInWorkouts).ThenInclude(z => z.Exercise).FirstOrDefaultAsync();
+
+        //If no result, or date does not match, make a new log.
+        if (Today == null)
+        { NewLog = true; }
+        else if (Today.LogDate != datetoday)
+        { NewLog = true; }
+
+        if (NewLog)
+        {
+            Today = new DailyLog();
+            Today.LogDate = datetoday;
+            await context.DailyLogs.AddAsync(Today);
+            await context.SaveChangesAsync();
+        }
+
+        //If daily log is new, it won't have a daily workout record. If so, make one and attach it to dailylog.
+        if (Today.DailyWorkout == null)
+        {
+            Today.DailyWorkout = new DailyWorkout();
+            Today.DailyWorkout.LogId = Today.LogId;
+            await context.DailyWorkouts.AddAsync(Today.DailyWorkout);
+            await context.SaveChangesAsync();
+        }
+
+        DailyWorkout = Today.DailyWorkout;
+
+        ExercisesInWorkout = DailyWorkout.ExercisesInWorkouts.ToList();
+        Exercises = await context.Exercises.ToListAsync(); //Bug: datagrid not showing data even tho it is in the list
+
+        await ExercisesDataGrid.Reload();
+    }
+
+    public async Task AddExercise()
+    {
+        NewExerciseInWorkout = new ExercisesInWorkout();
+
+        var result = await DialogService.OpenAsync("Add Exercise", ds =>
+        @<RadzenStack Orientation="Orientation.Vertical">
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
+                <RadzenFormField Text="Exercises">
+                    <RadzenDropDown Data="@Exercises" @bind-Value="@SelectedExercise.ExerciseId" ValueProperty="@nameof(Exercise.ExerciseId)" TextProperty="@nameof(Exercise.ExerciseName)"/>
+                </RadzenFormField>
+                <RadzenFormField Text="Weight (kg)">
+                    <RadzenNumeric @bind-Value="@NewExerciseInWorkout.Weight"/>
+                </RadzenFormField>
+                <RadzenFormField Text="Repetitions">
+                    <RadzenNumeric @bind-Value="@NewExerciseInWorkout.Reps"/>
+                </RadzenFormField>
+                <RadzenFormField Text="RPE (1-10)">
+                    <RadzenNumeric @bind-Value="@NewExerciseInWorkout.Rpe"/>
+                </RadzenFormField>
+                <RadzenFormField Text="Partials">
+                    <RadzenNumeric @bind-Value="@NewExerciseInWorkout.Partials"/>
+                </RadzenFormField>
+                <RadzenFormField Text="Notes">
+                    <RadzenTextBox @bind-Value="@NewExerciseInWorkout.Notes"/>
+                </RadzenFormField>
+            </RadzenStack>
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.End">
+                <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Success" Text="Add Set" Click="() => ds.Close(true)"/>
+                <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Danger" Text="Cancel" Click="() => ds.Close(false)"/>
+            </RadzenStack>
+        </RadzenStack>
+        );
+
+        NewExerciseInWorkout.ExerciseId = SelectedExercise.ExerciseId;
+        NewExerciseInWorkout.LogId = Today.LogId;
+        ExercisesInWorkout.Add(NewExerciseInWorkout);
+        await context.ExercisesInWorkouts.AddAsync(NewExerciseInWorkout);
+        await context.SaveChangesAsync();
+
+        await ExercisesDataGrid.Reload();
+        StateHasChanged();
+    }
+}

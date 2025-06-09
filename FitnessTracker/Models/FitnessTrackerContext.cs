@@ -108,21 +108,20 @@ public partial class FitnessTrackerContext : DbContext
 
         modelBuilder.Entity<DailyWorkout>(entity =>
         {
-            entity.HasKey(e => e.DworkoutId).HasName("PK_Daily_Workout_1");
+            entity.HasKey(e => e.LogId).HasName("Daily_Workout_PK");
 
             entity.ToTable("Daily_Workout");
 
-            entity.Property(e => e.DworkoutId)
+            entity.Property(e => e.LogId)
                 .ValueGeneratedNever()
-                .HasColumnName("DWorkout_ID");
-            entity.Property(e => e.LogId).HasColumnName("Log_ID");
+                .HasColumnName("Log_ID");
             entity.Property(e => e.Notes).HasMaxLength(500);
             entity.Property(e => e.PreWorkout).HasColumnName("Pre_Workout");
 
-            entity.HasOne(d => d.Log).WithMany(p => p.DailyWorkouts)
-                .HasForeignKey(d => d.LogId)
+            entity.HasOne(d => d.Log).WithOne(p => p.DailyWorkout)
+                .HasForeignKey<DailyWorkout>(d => d.LogId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Daily_Workout_Daily_Log1");
+                .HasConstraintName("Daily_Workout_Daily_Log_FK");
         });
 
         modelBuilder.Entity<Exercise>(entity =>
@@ -149,25 +148,26 @@ public partial class FitnessTrackerContext : DbContext
 
         modelBuilder.Entity<ExercisesInWorkout>(entity =>
         {
-            entity.HasKey(e => new { e.DworkoutId, e.ExerciseId }).HasName("Exercises_in_Workout_PK");
+            entity.HasKey(e => e.DexerciseId).HasName("Exercises_in_Workout_PK");
 
             entity.ToTable("Exercises_in_Workout");
 
-            entity.Property(e => e.DworkoutId).HasColumnName("DWorkout_ID");
+            entity.Property(e => e.DexerciseId).HasColumnName("DExercise_ID");
             entity.Property(e => e.ExerciseId).HasColumnName("Exercise_ID");
+            entity.Property(e => e.LogId).HasColumnName("Log_ID");
             entity.Property(e => e.Notes).HasMaxLength(500);
             entity.Property(e => e.Rpe).HasColumnName("RPE");
             entity.Property(e => e.Weight).HasColumnType("decimal(2, 0)");
 
-            entity.HasOne(d => d.Dworkout).WithMany(p => p.ExercisesInWorkouts)
-                .HasForeignKey(d => d.DworkoutId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("DWorkout_ID");
-
             entity.HasOne(d => d.Exercise).WithMany(p => p.ExercisesInWorkouts)
                 .HasForeignKey(d => d.ExerciseId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("Exercise_ID");
+                .HasConstraintName("Exercises_in_Workout_Exercises_FK");
+
+            entity.HasOne(d => d.Log).WithMany(p => p.ExercisesInWorkouts)
+                .HasForeignKey(d => d.LogId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("Exercises_in_Workout_Daily_Workout_FK");
         });
 
         modelBuilder.Entity<Food>(entity =>

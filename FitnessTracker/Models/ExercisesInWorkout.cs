@@ -5,8 +5,6 @@ namespace FitnessTracker.Models;
 
 public partial class ExercisesInWorkout
 {
-    public int DworkoutId { get; set; }
-
     public int ExerciseId { get; set; }
 
     public decimal Weight { get; set; }
@@ -19,7 +17,11 @@ public partial class ExercisesInWorkout
 
     public string? Notes { get; set; }
 
-    public virtual DailyWorkout Dworkout { get; set; } = null!;
+    public int LogId { get; set; }
+
+    public int DexerciseId { get; set; }
 
     public virtual Exercise Exercise { get; set; } = null!;
+
+    public virtual DailyWorkout Log { get; set; } = null!;
 }
