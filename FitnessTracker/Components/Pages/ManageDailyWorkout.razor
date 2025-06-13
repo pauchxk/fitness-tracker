@@ -86,6 +86,7 @@
         Exercises = await context.Exercises.ToListAsync(); //Bug: datagrid not showing data even tho it is in the list
 
         await ExercisesDataGrid.Reload();
+        StateHasChanged();
     }
 
     public async Task AddExercise()
