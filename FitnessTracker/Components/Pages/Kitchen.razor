@@ -143,7 +143,7 @@
         await base.OnInitializedAsync();
 
         context = DbFactory.CreateDbContext();
-        Foods = await context.Foods.ToListAsync();
+        Foods = await context.Foods.Include(x => x.FoodInMeals).ToListAsync();
         Meals = await context.Meals.Include(x => x.FoodInMeals).ThenInclude(z => z.Food).Include(y => y.DailyFoods).ToListAsync();
 
         await FoodsDataGrid.Reload();
@@ -214,5 +214,8 @@
     {
         if (meal.DailyFoods.Count > 0)
         { await DialogService.Alert("This meal has been added to a daily log, and cannot be deleted."); return; }
+
+        context.Meals.Remove(meal);
+        context.SaveChanges();
     }
 }

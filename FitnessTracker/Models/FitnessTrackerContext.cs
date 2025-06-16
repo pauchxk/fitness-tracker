@@ -63,15 +63,16 @@ public partial class FitnessTrackerContext : DbContext
 
             entity.HasOne(d => d.Food).WithMany(p => p.DailyFoods)
                 .HasForeignKey(d => d.FoodId)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("Daily_Foods_Foods_FK");
 
             entity.HasOne(d => d.Log).WithMany(p => p.DailyFoods)
                 .HasForeignKey(d => d.LogId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("Daily_Foods_Daily_Nutrition_FK");
 
             entity.HasOne(d => d.Meal).WithMany(p => p.DailyFoods)
                 .HasForeignKey(d => d.MealId)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("Daily_Foods_Meals_FK");
         });
 
@@ -102,8 +103,7 @@ public partial class FitnessTrackerContext : DbContext
 
             entity.HasOne(d => d.Log).WithOne(p => p.DailyNutrition)
                 .HasForeignKey<DailyNutrition>(d => d.LogId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("Log_ID2");
+                .HasConstraintName("Daily_Nutrition_Daily_Log_FK");
         });
 
         modelBuilder.Entity<DailyWorkout>(entity =>
@@ -120,7 +120,6 @@ public partial class FitnessTrackerContext : DbContext
 
             entity.HasOne(d => d.Log).WithOne(p => p.DailyWorkout)
                 .HasForeignKey<DailyWorkout>(d => d.LogId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("Daily_Workout_Daily_Log_FK");
         });
 
@@ -161,12 +160,10 @@ public partial class FitnessTrackerContext : DbContext
 
             entity.HasOne(d => d.Exercise).WithMany(p => p.ExercisesInWorkouts)
                 .HasForeignKey(d => d.ExerciseId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("Exercises_in_Workout_Exercises_FK");
 
             entity.HasOne(d => d.Log).WithMany(p => p.ExercisesInWorkouts)
                 .HasForeignKey(d => d.LogId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("Exercises_in_Workout_Daily_Workout_FK");
         });
 
@@ -198,13 +195,11 @@ public partial class FitnessTrackerContext : DbContext
 
             entity.HasOne(d => d.Food).WithMany(p => p.FoodInMeals)
                 .HasForeignKey(d => d.FoodId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("Food_ID2");
+                .HasConstraintName("Food_in_Meal_Foods_FK");
 
             entity.HasOne(d => d.Meal).WithMany(p => p.FoodInMeals)
                 .HasForeignKey(d => d.MealId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("Meal_ID2");
+                .HasConstraintName("Food_in_Meal_Meals_FK");
         });
 
         modelBuilder.Entity<Goal>(entity =>
@@ -246,8 +241,7 @@ public partial class FitnessTrackerContext : DbContext
 
             entity.HasOne(d => d.Exercise).WithMany(p => p.PersonalRecords)
                 .HasForeignKey(d => d.ExerciseId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Personal_Records_Exercises");
+                .HasConstraintName("Personal_Records_Exercises_FK");
         });
 
         modelBuilder.Entity<UserProfile>(entity =>
