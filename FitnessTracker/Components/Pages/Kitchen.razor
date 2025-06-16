@@ -165,6 +165,13 @@
 
     public async void DeleteFood(Food food)
     {
+        if (food.FoodInMeals.Count > 0 || food.DailyFoods.Count > 0)
+        { 
+            var result = await DialogService.Confirm("This food is being used in meals and/or daily tracking, are you sure you want to delete it?");
+            if (result == false)
+            { return; } 
+        }
+
         Foods.Remove(food);
         context.Foods.Remove(food);
         context.SaveChanges();
@@ -213,9 +220,17 @@
     public async void DeleteMeal(Meal meal)
     {
         if (meal.DailyFoods.Count > 0)
-        { await DialogService.Alert("This meal has been added to a daily log, and cannot be deleted."); return; }
+        { 
+            var result = await DialogService.Confirm("This meal is being used in daily tracking, are you sure you want to delete it?");
+            if (result == false)
+            { return; }
+        }
 
+        Meals.Remove(meal);
         context.Meals.Remove(meal);
         context.SaveChanges();
+
+        await MealsDataGrid.Reload();
+        StateHasChanged();
     }
 }
