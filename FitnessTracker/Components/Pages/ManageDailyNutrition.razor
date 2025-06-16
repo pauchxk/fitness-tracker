@@ -9,7 +9,12 @@
 @inject NavigationManager NavigationManager
 
 <PageTitle>Daily Nutrition</PageTitle>
-<h1>Daily Nutrition</h1>
+<RadzenStack Orientation="Orientation.Horizontal" class="rz-p-sm-1">
+    <h1>Daily Nutrition</h1>
+    <RadzenFormField Text="Date" Variant="Variant.Flat">
+        <RadzenDatePicker AllowClear="false" @bind-Value=@SelectedDate Change="@OnDateChange"/>
+    </RadzenFormField>
+</RadzenStack>
 
 <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%" class="rz-p-sm-1">
 
@@ -160,7 +165,7 @@
 @code
 {
     private FitnessTrackerContext context = default!;
-    public bool NewLog = false;
+    public required List<DailyLog> DailyLogs = new List<DailyLog>();
     public required DailyLog Today = new DailyLog();
     public required DailyNutrition DailyNutrition = new DailyNutrition();
     public required DateOnly datetoday = DateOnly.FromDateTime(DateTime.Today);
@@ -171,6 +176,8 @@
     public required int CarbohydrateGoal = 0;
     public required int FiberGoal = 0;
 
+    public DateOnly SelectedDate = new DateOnly();
+
     public required List<DailyFood> BreakfastFoods = new List<DailyFood>();
     public required List<DailyFood> LunchFoods = new List<DailyFood>();
     public required List<DailyFood> DinnerFoods = new List<DailyFood>();
@@ -179,16 +186,28 @@
     {
         context = DbFactory.CreateDbContext();
 
-        //Get most recent daily log
-        Today = await context.DailyLogs.OrderByDescending(x => x.LogDate).Include(y => y.DailyNutrition).FirstOrDefaultAsync();
+        DailyLogs = context.DailyLogs.Include(x => x.DailyNutrition).ToList();
 
-        //If no result, or date does not match, make a new log.
-        if (Today == null)
-        { NewLog = true; }
-        else if (Today.LogDate != datetoday)
-        { NewLog = true; }
+        SelectedDate = datetoday;
+        await OnDateChange();
 
-        if (NewLog)
+        Goals = await context.Goals.ToListAsync();
+        CaloriesGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Calories").TargetValue);
+        ProteinGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Protein").TargetValue);
+        FatGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Fat").TargetValue);
+        CarbohydrateGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Carbohydrate").TargetValue);
+        FiberGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Fiber").TargetValue);
+
+        StateHasChanged();
+    }
+
+    public async Task OnDateChange()
+    {
+        try
+        {
+            Today = DailyLogs.First(x => x.LogDate == SelectedDate);
+        }
+        catch (Exception ex)
         {
             Today = new DailyLog();
             Today.LogDate = datetoday;
@@ -207,19 +226,10 @@
 
         DailyNutrition = Today.DailyNutrition;
         
-        Goals = await context.Goals.ToListAsync();
         BreakfastFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Breakfast").Include(y => y.Food).Include(z => z.Meal).ToListAsync();
         LunchFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Lunch").Include(y => y.Food).Include(z => z.Meal).ToListAsync();
         DinnerFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Dinner").Include(y => y.Food).Include(z => z.Meal).ToListAsync();
         SnackFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Snack").Include(y => y.Food).Include(z => z.Meal).ToListAsync();
-
-        CaloriesGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Calories").TargetValue);
-        ProteinGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Protein").TargetValue);
-        FatGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Fat").TargetValue);
-        CarbohydrateGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Carbohydrate").TargetValue);
-        FiberGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Fiber").TargetValue);
-
-        StateHasChanged();
     }
 
     public void EditGoals()

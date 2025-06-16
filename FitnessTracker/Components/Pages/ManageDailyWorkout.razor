@@ -83,7 +83,7 @@
         DailyWorkout = Today.DailyWorkout;
 
         ExercisesInWorkout = DailyWorkout.ExercisesInWorkouts.ToList();
-        Exercises = await context.Exercises.ToListAsync(); //Bug: datagrid not showing data even tho it is in the list
+        Exercises = await context.Exercises.ToListAsync();
 
         await ExercisesDataGrid.Reload();
         StateHasChanged();
