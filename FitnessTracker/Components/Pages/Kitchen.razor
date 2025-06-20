@@ -7,6 +7,7 @@
 @using Radzen.Blazor
 @inject IDbContextFactory<FitnessTracker.Models.FitnessTrackerContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject DialogService DialogService
 
 <PageTitle>Kitchen</PageTitle>
 <h1>Kitchen</h1>
@@ -98,7 +99,7 @@
                     <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Icon="add_circle" Text="New Meal" Click="@AddMeal"/>
                 </HeaderTemplate>
                 <Template Context="meal">
-                    <RadzenDataGrid Data="@(FoodsInMeals.FindAll(x => x.MealId == meal.MealId))">
+                    <RadzenDataGrid Data="@meal.FoodInMeals">
                         <Columns>
                             <RadzenDataGridColumn Property="Food.FoodName" Title="Name" Frozen="true" FrozenPosition="FrozenColumnPosition.Left"/>
                             <RadzenDataGridColumn Property="Food.FoodGroup" Title="Group"/>
@@ -116,6 +117,11 @@
                     <RadzenDataGridColumn Property="@nameof(Meal.Fat)" Title="Fat (g)"/>
                     <RadzenDataGridColumn Property="@nameof(Meal.Carbohydrates)" Title="Carbohydrates (g)"/>
                     <RadzenDataGridColumn Property="@nameof(Meal.Fiber)" Title="Fiber (g)"/>
+                    <RadzenDataGridColumn Title="Options" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+                        <Template Context="meal">
+                            <RadzenButton Icon="delete" Shade="Shade.Dark" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => DeleteMeal(meal))" @onclick:stopPropagation="true"/>
+                        </Template>
+                    </RadzenDataGridColumn>
                 </Columns>
             </RadzenDataGrid>
         </RadzenTabsItem>
@@ -128,7 +134,6 @@
     private FitnessTrackerContext context = default!;
     public required List<Food> Foods { get;set; }
     public required List<Meal> Meals { get; set; }
-    public required List<FoodInMeal> FoodsInMeals { get; set; }
     public required RadzenDataGrid<Food> FoodsDataGrid;
     public required RadzenDataGrid<Meal> MealsDataGrid;
     public required bool IsEditing = false;
@@ -138,9 +143,8 @@
         await base.OnInitializedAsync();
 
         context = DbFactory.CreateDbContext();
-        Foods = await context.Foods.ToListAsync();
-        Meals = await context.Meals.ToListAsync();
-        FoodsInMeals = await context.FoodInMeals.ToListAsync();
+        Foods = await context.Foods.Include(x => x.FoodInMeals).ToListAsync();
+        Meals = await context.Meals.Include(x => x.FoodInMeals).ThenInclude(z => z.Food).Include(y => y.DailyFoods).ToListAsync();
 
         await FoodsDataGrid.Reload();
         StateHasChanged();
@@ -161,6 +165,13 @@
 
     public async void DeleteFood(Food food)
     {
+        if (food.FoodInMeals.Count > 0 || food.DailyFoods.Count > 0)
+        { 
+            var result = await DialogService.Confirm("This food is being used in meals and/or daily tracking, are you sure you want to delete it?");
+            if (result == false)
+            { return; } 
+        }
+
         Foods.Remove(food);
         context.Foods.Remove(food);
         context.SaveChanges();
@@ -204,5 +215,22 @@
     public void AddMeal()
     {
         NavigationManager.NavigateTo("/New-Meal");
+    }
+
+    public async void DeleteMeal(Meal meal)
+    {
+        if (meal.DailyFoods.Count > 0)
+        { 
+            var result = await DialogService.Confirm("This meal is being used in daily tracking, are you sure you want to delete it?");
+            if (result == false)
+            { return; }
+        }
+
+        Meals.Remove(meal);
+        context.Meals.Remove(meal);
+        context.SaveChanges();
+
+        await MealsDataGrid.Reload();
+        StateHasChanged();
     }
 }

@@ -1,0 +1,162 @@
+@page "/Daily-Workout"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using FitnessTracker.Models
+@using Radzen
+@using Radzen.Blazor
+@inject IDbContextFactory<FitnessTracker.Models.FitnessTrackerContext> DbFactory
+@inject DialogService DialogService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Daily Workout</PageTitle>
+<RadzenStack Orientation="Orientation.Horizontal" class="rz-p-sm-1">
+    <h1>Daily Workout</h1>
+    <RadzenFormField Text="Date" Variant="Variant.Flat">
+        <RadzenDatePicker AllowClear="false" @bind-Value=@SelectedDate Change="@OnDateChange" Max="DateTime.Today"/>
+    </RadzenFormField>
+</RadzenStack>
+
+
+<RadzenStack Orientation="Orientation.Vertical" Style="height: 90%; width: 100%" class="rz-p-sm-1">
+
+    <RadzenCard Variant="Variant.Outlined" Style="height: 20%; width: 100%">
+        <RadzenStack Orientation="Orientation.Horizontal" Style="height: 100%; width: 100%" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
+            <RadzenText>Workout metrics</RadzenText>
+        </RadzenStack>
+    </RadzenCard>
+
+    <RadzenDataGrid Data="@ExercisesInWorkout" @ref="@ExercisesDataGrid">
+        <HeaderTemplate>
+            <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Success" Text="Add Exercise" Click="@AddExercise"/>
+        </HeaderTemplate>
+        <Columns>
+            <RadzenDataGridColumn Property="Exercise.ExerciseName" Title="Name"/>
+            <RadzenDataGridColumn Property="Weight" Title="Weight"/>
+            <RadzenDataGridColumn Property="Reps" Title="Reps"/>
+            <RadzenDataGridColumn Property="Rpe" Title="RPE"/>
+            <RadzenDataGridColumn Property="Partials" Title="Partials"/>
+            <RadzenDataGridColumn Property="Notes" Title="Notes"/>
+            <RadzenDataGridColumn Title="Options" Frozen="true" FrozenPosition="FrozenColumnPosition.Right" TextAlign="TextAlign.Center">
+                <Template Context="exercise">
+                    <RadzenButton Icon="delete" Shade="Shade.Dark" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => DeleteExercise(exercise))" @onclick:stopPropagation="true"/>
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+
+</RadzenStack>
+
+@code
+{
+    private FitnessTrackerContext context = default!;
+    public List<DailyLog> DailyLogs = new List<DailyLog>();
+    public required DailyWorkout DailyWorkout = new DailyWorkout();
+    public required DailyLog Today = new DailyLog();
+    public required DateOnly datetoday = DateOnly.FromDateTime(DateTime.Today);
+    public bool NewLog = false;
+
+    public DateOnly SelectedDate = new DateOnly();
+
+    public List<ExercisesInWorkout> ExercisesInWorkout = new List<ExercisesInWorkout>();
+    public required RadzenDataGrid<ExercisesInWorkout> ExercisesDataGrid;
+    public required List<Exercise> Exercises = new List<Exercise>();
+    public required Exercise SelectedExercise = new Exercise();
+    public required ExercisesInWorkout NewExerciseInWorkout = new ExercisesInWorkout();
+
+    protected override async void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+
+        DailyLogs = context.DailyLogs.Include(x => x.DailyWorkout).ThenInclude(x => x.ExercisesInWorkouts).ToList();
+
+        SelectedDate = datetoday;
+        await OnDateChange();
+
+        Exercises = await context.Exercises.ToListAsync();
+
+        await ExercisesDataGrid.Reload();
+        StateHasChanged();
+    }
+
+    public async Task OnDateChange()
+    {
+        try
+        {
+            Today = DailyLogs.First(x => x.LogDate == SelectedDate);
+        }
+        catch
+        {
+            Today = new DailyLog();
+            Today.LogDate = SelectedDate;
+            await context.DailyLogs.AddAsync(Today);
+            await context.SaveChangesAsync();
+        }
+
+        //If daily log is new, it won't have a daily workout record. If so, make one and attach it to dailylog.
+        if (Today.DailyWorkout == null)
+        {
+            Today.DailyWorkout = new DailyWorkout();
+            Today.DailyWorkout.LogId = Today.LogId;
+            await context.DailyWorkouts.AddAsync(Today.DailyWorkout);
+            await context.SaveChangesAsync();
+        }
+
+        DailyWorkout = Today.DailyWorkout;
+        ExercisesInWorkout = DailyWorkout.ExercisesInWorkouts.ToList();
+
+        StateHasChanged();
+    }
+
+    public async Task AddExercise()
+    {
+        NewExerciseInWorkout = new ExercisesInWorkout();
+
+        var result = await DialogService.OpenAsync("Add Exercise", ds =>
+        @<RadzenStack Orientation="Orientation.Vertical">
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
+                <RadzenFormField Text="Exercises">
+                    <RadzenDropDown Data="@Exercises" @bind-Value="@SelectedExercise.ExerciseId" ValueProperty="@nameof(Exercise.ExerciseId)" TextProperty="@nameof(Exercise.ExerciseName)"/>
+                </RadzenFormField>
+                <RadzenFormField Text="Weight (kg)">
+                    <RadzenNumeric @bind-Value="@NewExerciseInWorkout.Weight"/>
+                </RadzenFormField>
+                <RadzenFormField Text="Repetitions">
+                    <RadzenNumeric @bind-Value="@NewExerciseInWorkout.Reps"/>
+                </RadzenFormField>
+                <RadzenFormField Text="RPE (1-10)">
+                    <RadzenNumeric @bind-Value="@NewExerciseInWorkout.Rpe"/>
+                </RadzenFormField>
+                <RadzenFormField Text="Partials">
+                    <RadzenNumeric @bind-Value="@NewExerciseInWorkout.Partials"/>
+                </RadzenFormField>
+                <RadzenFormField Text="Notes">
+                    <RadzenTextBox @bind-Value="@NewExerciseInWorkout.Notes"/>
+                </RadzenFormField>
+            </RadzenStack>
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.End">
+                <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Success" Text="Add Set" Click="() => ds.Close(true)"/>
+                <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Danger" Text="Cancel" Click="() => ds.Close(false)"/>
+            </RadzenStack>
+        </RadzenStack>
+        );
+
+        NewExerciseInWorkout.ExerciseId = SelectedExercise.ExerciseId;
+        NewExerciseInWorkout.LogId = Today.LogId;
+        ExercisesInWorkout.Add(NewExerciseInWorkout);
+        await context.ExercisesInWorkouts.AddAsync(NewExerciseInWorkout);
+        await context.SaveChangesAsync();
+
+        await ExercisesDataGrid.Reload();
+        StateHasChanged();
+    }
+
+    async void DeleteExercise(ExercisesInWorkout exercise)
+    {
+        ExercisesInWorkout.Remove(exercise);
+        context.ExercisesInWorkouts.Remove(exercise);
+        context.SaveChanges();
+        await ExercisesDataGrid.Reload();
+        StateHasChanged();
+    }
+}
