@@ -46,7 +46,7 @@
                     <RadzenText>Carbohydrates: @DailyNutrition.Carbohydrates/@(CarbohydrateGoal)g</RadzenText>
                     <RadzenText>Fiber: @DailyNutrition.Fiber/@(FiberGoal)g</RadzenText>
                 </RadzenCard>
-                <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Text="Add Food / Meal" Click="@(args => NavigationManager.NavigateTo("Daily-Meal-Form"))"/>
+                <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Text="Add Food / Meal" Click="@(args => NavigationManager.NavigateTo($"Daily-Meal-Form/{SelectedDate2:yyyy-MM-dd}"))"/>
             </RadzenStack>
             <RadzenRadialGauge Style="width: 100%; height: 100%">
                 <RadzenRadialGaugeScale StartAngle="-150" EndAngle="150" Min="0" Max="@ProteinGoal" ShowTickLabels="false" TickPosition="GaugeTickPosition.None">
@@ -177,6 +177,7 @@
     public required int FiberGoal = 0;
 
     public DateOnly SelectedDate = new DateOnly();
+    public DateTime SelectedDate2 = new DateTime();
 
     public required List<DailyFood> BreakfastFoods = new List<DailyFood>();
     public required List<DailyFood> LunchFoods = new List<DailyFood>();
@@ -189,6 +190,7 @@
         DailyLogs = context.DailyLogs.Include(x => x.DailyNutrition).ToList();
 
         SelectedDate = datetoday;
+        SelectedDate2 = SelectedDate.ToDateTime(TimeOnly.MinValue);
         await OnDateChange();
 
         Goals = await context.Goals.ToListAsync();
@@ -231,6 +233,7 @@
         DinnerFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Dinner").Include(y => y.Food).Include(z => z.Meal).ToListAsync();
         SnackFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Snack").Include(y => y.Food).Include(z => z.Meal).ToListAsync();
 
+        SelectedDate2 = SelectedDate.ToDateTime(TimeOnly.MinValue);
         StateHasChanged();
     }
 

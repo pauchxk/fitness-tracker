@@ -1,4 +1,5 @@
 @page "/Daily-Meal-Form"
+@page "/Daily-Meal-Form/{SelectedDate2:datetime}"
 @rendermode InteractiveServer
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
@@ -97,6 +98,8 @@
 @code
 {
     private FitnessTrackerContext context = default!;
+    [Parameter] public DateTime SelectedDate2 { get; set; }
+    public DateOnly SelectedDate = new DateOnly();
     public bool NewLog = false;
     public required DailyLog Today = new DailyLog();
     public required DateOnly datetoday = DateOnly.FromDateTime(DateTime.Today);
@@ -108,7 +111,7 @@
     public List<Meal> Meals = new List<Meal>();
     public Meal SelectedMeal1 = new Meal();
     public Meal SelectedMeal2 = new Meal();
-    public RadzenDataGrid<FoodInMeal> MealsDataGrid;
+    public required RadzenDataGrid<FoodInMeal> MealsDataGrid;
     public DailyFood DailyFood = new DailyFood();
     public required string MealType { get; set; }
     public required List<string> MealTypes = new List<string>
@@ -122,24 +125,25 @@
     protected override async Task OnInitializedAsync()
     {
         context = DbFactory.CreateDbContext();
+        SelectedDate = DateOnly.FromDateTime(SelectedDate2);
 
         Foods = await context.Foods.ToListAsync();
         Meals = await context.Meals.Include(x => x.FoodInMeals).ThenInclude(y => y.Food).ToListAsync();
         DailyFood.Amount = 100;
 
         //Get most recent daily log
-        Today = await context.DailyLogs.OrderByDescending(x => x.LogDate).Include(y => y.DailyNutrition).FirstOrDefaultAsync();
+        Today = await context.DailyLogs.Include(y => y.DailyNutrition).FirstOrDefaultAsync(x => x.LogDate == SelectedDate);
 
         //If no result, or date does not match, make a new log.
         if (Today == null)
         { NewLog = true; }
-        else if (Today.LogDate != datetoday)
+        else if (Today.LogDate != SelectedDate)
         { NewLog = true; }
 
         if (NewLog)
         {
             Today = new DailyLog();
-            Today.LogDate = datetoday;
+            Today.LogDate = SelectedDate;
             await context.DailyLogs.AddAsync(Today);
             await context.SaveChangesAsync();
         }
@@ -206,6 +210,7 @@
         DailyNutrition.Carbohydrates = Convert.ToInt32(DailyNutrition.Carbohydrates + (Convert.ToDecimal(SelectedFood2.Carbohydrates) / 100 * DailyFood.Amount));
         DailyNutrition.Fiber = Convert.ToInt32(DailyNutrition.Fiber + (Convert.ToDecimal(SelectedFood2.Fiber) / 100 * DailyFood.Amount));
 
+        context.DailyNutritions.Update(DailyNutrition);
         context.SaveChanges();
 
         NavigationManager.NavigateTo("Daily-Nutrition");
