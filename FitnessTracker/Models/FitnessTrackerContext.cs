@@ -82,6 +82,8 @@ public partial class FitnessTrackerContext : DbContext
 
             entity.ToTable("Daily_Log");
 
+            entity.HasIndex(e => e.LogDate, "Daily_Log_UNIQUE").IsUnique();
+
             entity.Property(e => e.LogId).HasColumnName("Log_ID");
             entity.Property(e => e.CaffeineIntake).HasColumnName("Caffeine_Intake");
             entity.Property(e => e.LogDate).HasColumnName("Log_Date");

@@ -12,7 +12,7 @@
 <RadzenStack Orientation="Orientation.Horizontal" class="rz-p-sm-1">
     <h1>Daily Nutrition</h1>
     <RadzenFormField Text="Date" Variant="Variant.Flat">
-        <RadzenDatePicker AllowClear="false" @bind-Value=@SelectedDate Change="@OnDateChange"/>
+        <RadzenDatePicker AllowClear="false" @bind-Value=@SelectedDate Change="@OnDateChange" Max="DateTime.Today"/>
     </RadzenFormField>
 </RadzenStack>
 
@@ -207,10 +207,10 @@
         {
             Today = DailyLogs.First(x => x.LogDate == SelectedDate);
         }
-        catch (Exception ex)
+        catch
         {
             Today = new DailyLog();
-            Today.LogDate = datetoday;
+            Today.LogDate = SelectedDate;
             await context.DailyLogs.AddAsync(Today);
             await context.SaveChangesAsync();
         }
@@ -230,6 +230,8 @@
         LunchFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Lunch").Include(y => y.Food).Include(z => z.Meal).ToListAsync();
         DinnerFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Dinner").Include(y => y.Food).Include(z => z.Meal).ToListAsync();
         SnackFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Snack").Include(y => y.Food).Include(z => z.Meal).ToListAsync();
+
+        StateHasChanged();
     }
 
     public void EditGoals()
