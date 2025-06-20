@@ -10,7 +10,13 @@
 @inject NavigationManager NavigationManager
 
 <PageTitle>Daily Workout</PageTitle>
-<h1>Daily Workout</h1>
+<RadzenStack Orientation="Orientation.Horizontal" class="rz-p-sm-1">
+    <h1>Daily Workout</h1>
+    <RadzenFormField Text="Date" Variant="Variant.Flat">
+        <RadzenDatePicker AllowClear="false" @bind-Value=@SelectedDate Change="@OnDateChange" Max="DateTime.Today"/>
+    </RadzenFormField>
+</RadzenStack>
+
 
 <RadzenStack Orientation="Orientation.Vertical" Style="height: 90%; width: 100%" class="rz-p-sm-1">
 
@@ -39,10 +45,13 @@
 @code
 {
     private FitnessTrackerContext context = default!;
+    public List<DailyLog> DailyLogs = new List<DailyLog>();
     public required DailyWorkout DailyWorkout = new DailyWorkout();
     public required DailyLog Today = new DailyLog();
     public required DateOnly datetoday = DateOnly.FromDateTime(DateTime.Today);
     public bool NewLog = false;
+
+    public DateOnly SelectedDate = new DateOnly();
 
     public List<ExercisesInWorkout> ExercisesInWorkout = new List<ExercisesInWorkout>();
     public required RadzenDataGrid<ExercisesInWorkout> ExercisesDataGrid;
@@ -54,19 +63,27 @@
     {
         context = DbFactory.CreateDbContext();
 
-        //Get most recent daily log
-        Today = await context.DailyLogs.OrderByDescending(x => x.LogDate).Include(y => y.DailyWorkout).ThenInclude(y => y.ExercisesInWorkouts).ThenInclude(z => z.Exercise).FirstOrDefaultAsync();
+        DailyLogs = context.DailyLogs.Include(x => x.DailyWorkout).ThenInclude(x => x.ExercisesInWorkouts).ToList();
 
-        //If no result, or date does not match, make a new log.
-        if (Today == null)
-        { NewLog = true; }
-        else if (Today.LogDate != datetoday)
-        { NewLog = true; }
+        SelectedDate = datetoday;
+        await OnDateChange();
 
-        if (NewLog)
+        Exercises = await context.Exercises.ToListAsync();
+
+        await ExercisesDataGrid.Reload();
+        StateHasChanged();
+    }
+
+    public async Task OnDateChange()
+    {
+        try
+        {
+            Today = DailyLogs.First(x => x.LogDate == SelectedDate);
+        }
+        catch
         {
             Today = new DailyLog();
-            Today.LogDate = datetoday;
+            Today.LogDate = SelectedDate;
             await context.DailyLogs.AddAsync(Today);
             await context.SaveChangesAsync();
         }
@@ -81,11 +98,8 @@
         }
 
         DailyWorkout = Today.DailyWorkout;
-
         ExercisesInWorkout = DailyWorkout.ExercisesInWorkouts.ToList();
-        Exercises = await context.Exercises.ToListAsync();
 
-        await ExercisesDataGrid.Reload();
         StateHasChanged();
     }
 
