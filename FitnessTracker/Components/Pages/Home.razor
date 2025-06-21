@@ -79,15 +79,9 @@
         context = DbFactory.CreateDbContext();
 
         //Get most recent daily log
-        Today = await context.DailyLogs.OrderByDescending(x => x.LogDate).Include(y => y.DailyNutrition).FirstOrDefaultAsync();
+        Today = context.DailyLogs.OrderByDescending(x => x.LogDate).Include(y => y.DailyNutrition).Include(x => x.DailyWorkout).FirstOrDefault();
 
-        //If no result, or date does not match, make a new log.
-        if (Today == null)
-        { NewLog = true; }
-        else if (Today.LogDate != datetoday)
-        { NewLog = true; }
-
-        if (NewLog)
+        if (Today == null || (Today.LogDate != datetoday && context.DailyLogs.Any(x => x.LogDate == datetoday) == false))
         {
             Today = new DailyLog();
             Today.LogDate = datetoday;
@@ -106,7 +100,6 @@
 
         DailyNutrition = Today.DailyNutrition;
 
-        NewLog = false;
         StateHasChanged();
     }
 
