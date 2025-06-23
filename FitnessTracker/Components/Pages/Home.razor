@@ -81,6 +81,7 @@
         //Get most recent daily log
         Today = context.DailyLogs.OrderByDescending(x => x.LogDate).Include(y => y.DailyNutrition).Include(x => x.DailyWorkout).FirstOrDefault();
 
+        //If there are no logs available, or the log date does not match today's date, or none of the logs match today's date, create a new log
         if (Today == null || (Today.LogDate != datetoday && context.DailyLogs.Any(x => x.LogDate == datetoday) == false))
         {
             Today = new DailyLog();

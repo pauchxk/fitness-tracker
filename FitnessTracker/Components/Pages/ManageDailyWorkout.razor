@@ -112,6 +112,7 @@
     {
         NewExerciseInWorkout = new ExercisesInWorkout();
 
+        //Open an inline dialog that allows the user to add a new exercise.
         var result = await DialogService.OpenAsync("Add Exercise", ds =>
         @<RadzenStack Orientation="Orientation.Vertical">
             <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">

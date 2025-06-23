@@ -14,7 +14,7 @@
 <h1>Daily Meal</h1>
 
 <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%; width: 100%" class="rz-p-sm-1" AlignItems="AlignItems.Center">
-
+    @*Reset button, Cancel button, switch between food and meal form*@
     <RadzenCard Variant="Variant.Outlined" Style="width: 100%">
         <RadzenStack Orientation="Orientation.Horizontal" class="rz-p-sm-1" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Style="width: 100%">
             <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Text="Reset" Click="@Reset"/>
@@ -25,6 +25,7 @@
         </RadzenStack>
     </RadzenCard>
 
+    @*If user selects food*@
     @if (!FoodMeal)
     {
         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Style="width: 100%">
@@ -53,6 +54,7 @@
         </RadzenCard>
     }
 
+    @*If user selects meal*@
     @if (FoodMeal)
     {
         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Style="width: 100%">
@@ -97,6 +99,7 @@
 
 @code
 {
+    //Create variables needed
     private FitnessTrackerContext context = default!;
     [Parameter] public DateTime SelectedDate2 { get; set; }
     public DateOnly SelectedDate = new DateOnly();
@@ -122,11 +125,15 @@
             "Snack"
         };
 
+    //On inital page load 
     protected override async Task OnInitializedAsync()
     {
+        //Create instance of database context for interaction
         context = DbFactory.CreateDbContext();
+        //Grab DateOnly version of SelectedDate based on parameter brought through url
         SelectedDate = DateOnly.FromDateTime(SelectedDate2);
 
+        //Select all foods and meals stored in db
         Foods = await context.Foods.ToListAsync();
         Meals = await context.Meals.Include(x => x.FoodInMeals).ThenInclude(y => y.Food).ToListAsync();
         DailyFood.Amount = 100;
@@ -162,6 +169,7 @@
         StateHasChanged();
     }
 
+    //On change type between food/meal, refresh selector variables.
     void OnChangeType()
     {
         SelectedFood1 = new Food();
@@ -197,6 +205,7 @@
         bool? result = await DialogService.Confirm("Are you sure you want to add this food item to today's log?");
         if (result == false) { return; }
 
+        //Set DailyFood properties manually to link to each table.
         DailyFood.FoodId = SelectedFood2.FoodId;
         DailyFood.MealType = MealType;
         DailyFood.LogId = Today.LogId;
@@ -204,6 +213,7 @@
         context.DailyFoods.Add(DailyFood);
         context.SaveChanges();
 
+        //Calculate macros by taking each value from the selected food, diving by 100 and multiplying by the selected amount, and adding to the current DailyNutrition value.
         DailyNutrition.Calories = Convert.ToInt32(DailyNutrition.Calories + (Convert.ToDecimal(SelectedFood2.Calories) / 100 * DailyFood.Amount));
         DailyNutrition.Protein = Convert.ToInt32(DailyNutrition.Protein + (Convert.ToDecimal(SelectedFood2.Protein) / 100 * DailyFood.Amount));
         DailyNutrition.Fat = Convert.ToInt32(DailyNutrition.Fat + (Convert.ToDecimal(SelectedFood2.Fat) / 100 * DailyFood.Amount));
@@ -221,6 +231,7 @@
         bool? result = await DialogService.Confirm("Are you sure you want to add this meal to today's log?");
         if (result == false) { return; }
 
+        //Set DailyFood properties manually to link to each table.
         DailyFood.MealId = SelectedMeal2.MealId;
         DailyFood.MealType = MealType;
         DailyFood.LogId = Today.LogId;
@@ -228,6 +239,7 @@
         context.DailyFoods.Add(DailyFood);
         context.SaveChanges();
 
+        //Calculate macros by taking each value from the selected food, diving by 100 and multiplying by the selected amount, and adding to the current DailyNutrition value.
         DailyNutrition.Calories = Convert.ToInt32(DailyNutrition.Calories + (Convert.ToDecimal(SelectedMeal2.Calories) / 100 * DailyFood.Amount));
         DailyNutrition.Protein = Convert.ToInt32(DailyNutrition.Protein + (Convert.ToDecimal(SelectedMeal2.Protein) / 100 * DailyFood.Amount));
         DailyNutrition.Fat = Convert.ToInt32(DailyNutrition.Fat + (Convert.ToDecimal(SelectedMeal2.Fat) / 100 * DailyFood.Amount));
