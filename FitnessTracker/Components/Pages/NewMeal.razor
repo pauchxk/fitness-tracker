@@ -127,8 +127,10 @@
         {
             if (foodinmeal.Food != null)
             {
+                //Set multiplier for macro values to the amount selected / 100.
                 var multiplier = foodinmeal.Amount / 100.00;
 
+                //Multiply each macro by the multiplier, and add it to the meal's total macro value.
                 Meal.Calories = Convert.ToInt32(Meal.Calories + (foodinmeal.Food.Calories * multiplier));
                 Meal.Protein = Convert.ToInt32(Meal.Protein + (foodinmeal.Food.Protein * multiplier));
                 Meal.Fat = Convert.ToInt32(Meal.Fat + (foodinmeal.Food.Fat * multiplier));

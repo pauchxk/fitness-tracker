@@ -144,6 +144,7 @@
         if (!Exercises.Contains(exercise))
         { Exercises.Remove(exercise); }
 
+        //If exercise row has been altered, find the original state and revert back to it.
         else
         {
             var ExerciseEntry = context.Entry(exercise);

@@ -8,6 +8,7 @@
 @inject IDbContextFactory<FitnessTracker.Models.FitnessTrackerContext> DbFactory
 @inject NavigationManager NavigationManager
 
+@*Set page title and date, automatically set to today's date*@
 <PageTitle>Daily Nutrition</PageTitle>
 <RadzenStack Orientation="Orientation.Horizontal" class="rz-p-sm-1">
     <h1>Daily Nutrition</h1>
@@ -18,6 +19,7 @@
 
 <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%" class="rz-p-sm-1">
 
+    @*Card displaying macro overview*@
     <RadzenCard Variant="Variant.Outlined" Style="height: 240px; width: 100%" >
         <RadzenStack Orientation="Orientation.Horizontal" Style="height: 20%">
             <h3>Macro Overview</h3>
@@ -25,6 +27,7 @@
             <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Icon="add_circle" Text="Edit Goals" Click="@EditGoals"/>
         </RadzenStack>
         <RadzenStack Orientation="Orientation.Horizontal" Style="height: 80%; width: 100%" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Gap="1rem">
+            @*Data visualisation for calories macro*@
             <RadzenRadialGauge Style="width: 100%; height: 100%">
                 <RadzenRadialGaugeScale StartAngle="-150" EndAngle="150" Min="0" Max="@CaloriesGoal" ShowTickLabels="false" TickPosition="GaugeTickPosition.None">
                     <RadzenRadialGaugeScalePointer Value="@DailyNutrition.Calories" Length="0.6" ShowValue="true">
@@ -40,6 +43,7 @@
                     <RadzenRadialGaugeScaleRange From="0" To="1000" Fill="red" />
                 </RadzenRadialGaugeScale>
             </RadzenRadialGauge> 
+            @*List of macro values*@
             <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="height: 100%; width: 100%">
                 <RadzenCard Variant="Variant.Outlined">
                     <RadzenText>Fats: @DailyNutrition.Fat/@(FatGoal)g</RadzenText>
@@ -48,6 +52,7 @@
                 </RadzenCard>
                 <RadzenButton Shade="Shade.Dark" ButtonStyle="ButtonStyle.Primary" Text="Add Food / Meal" Click="@(args => NavigationManager.NavigateTo($"Daily-Meal-Form/{SelectedDate2:yyyy-MM-dd}"))"/>
             </RadzenStack>
+            @*Data visualisation for protein macro*@
             <RadzenRadialGauge Style="width: 100%; height: 100%">
                 <RadzenRadialGaugeScale StartAngle="-150" EndAngle="150" Min="0" Max="@ProteinGoal" ShowTickLabels="false" TickPosition="GaugeTickPosition.None">
                     <RadzenRadialGaugeScalePointer Value="@DailyNutrition.Protein" Length="0.6" ShowValue="true">
@@ -69,6 +74,7 @@
     <RadzenStack Orientation="Orientation.Horizontal">
         <RadzenCard Variant="Variant.Outlined" Style="height: 300px; width: 50%">
             <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%">
+                @*Display all breakfast foods and meals*@
                 <h3>Breakfast</h3>
                     <RadzenDataGrid Data="@BreakfastFoods" Style="height: 100%; width: 100%">
                         <Columns>
@@ -91,6 +97,7 @@
         </RadzenCard>
         <RadzenCard Variant="Variant.Outlined" Style="height: 300px; width: 50%">
             <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%">
+                @*Display all lunch foods and meals*@
                 <h3>Lunch</h3>
                     <RadzenDataGrid Data="@LunchFoods" Style="height: 100%; width: 100%">
                         <Columns>
@@ -116,6 +123,7 @@
     <RadzenStack Orientation="Orientation.Horizontal">
         <RadzenCard Variant="Variant.Outlined" Style="height: 300px; width: 50%">
             <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%">
+                @*Display all dinner foods and meals*@
                 <h3>Dinner</h3>
                     <RadzenDataGrid Data="@DinnerFoods" Style="height: 100%; width: 100%">
                         <Columns>
@@ -138,6 +146,7 @@
         </RadzenCard>
         <RadzenCard Variant="Variant.Outlined" Style="height: 300px; width: 50%">
             <RadzenStack Orientation="Orientation.Vertical" Style="height: 100%">
+                @*Display all snack foods and meals*@
                 <h3>Snacks</h3>
                     <RadzenDataGrid Data="@SnackFoods" Style="height: 100%; width: 100%">
                         <Columns>
@@ -164,6 +173,7 @@
 
 @code
 {
+    //Instantiate all variables needed
     private FitnessTrackerContext context = default!;
     public required List<DailyLog> DailyLogs = new List<DailyLog>();
     public required DailyLog Today = new DailyLog();
@@ -183,16 +193,21 @@
     public required List<DailyFood> LunchFoods = new List<DailyFood>();
     public required List<DailyFood> DinnerFoods = new List<DailyFood>();
     public required List<DailyFood> SnackFoods = new List<DailyFood>();
+
+    //On inital page load
     protected override async void OnInitialized()
     {
+        //Initalised db context
         context = DbFactory.CreateDbContext();
 
         DailyLogs = context.DailyLogs.Include(x => x.DailyNutrition).ToList();
 
+        //Set selected date to current date, set selecteddate2 as a datetime version (for sending to dailymealform, urls can only pass DateTime as a parameter, not DateOnly).
         SelectedDate = datetoday;
         SelectedDate2 = SelectedDate.ToDateTime(TimeOnly.MinValue);
         await OnDateChange();
 
+        //Grab goals and set for each macro
         Goals = await context.Goals.ToListAsync();
         CaloriesGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Calories").TargetValue);
         ProteinGoal = Convert.ToInt32(Goals.Find(x => x.GoalType == "Protein").TargetValue);
@@ -207,10 +222,12 @@
     {
         try
         {
+            //Attempt to set Today based on logdate
             Today = DailyLogs.First(x => x.LogDate == SelectedDate);
         }
         catch
         {
+            //If this fails, it means the current date does not have a matching log - create a new one.
             Today = new DailyLog();
             Today.LogDate = SelectedDate;
             await context.DailyLogs.AddAsync(Today);
@@ -228,6 +245,7 @@
 
         DailyNutrition = Today.DailyNutrition;
         
+        //Grab all foods and meals for each meal
         BreakfastFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Breakfast").Include(y => y.Food).Include(z => z.Meal).ToListAsync();
         LunchFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Lunch").Include(y => y.Food).Include(z => z.Meal).ToListAsync();
         DinnerFoods = await context.DailyFoods.Where(x => x.LogId == Today.LogId && x.MealType == "Dinner").Include(y => y.Food).Include(z => z.Meal).ToListAsync();
